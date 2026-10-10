@@ -30,4 +30,12 @@ public class ExerciseController {
         ExerciseResponse response = service.createExercise(request);
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/{name}")
+    public ResponseEntity<ExerciseResponse> findExercise(
+            @PathVariable("name") String name
+    ) {
+        ExerciseResponse response = service.findExercise(name);
+        return ResponseEntity.ok(response);
+    }
 }
