@@ -9,6 +9,7 @@ import java.util.List;
 public class ExerciseMapper {
     public ExerciseResponse toResponse(Exercise exercise) {
         ExerciseResponse response = new ExerciseResponse();
+        response.setId(exercise.getId());
         response.setName(exercise.getName());
         response.setDescription(exercise.getDescription());
         response.setMuscleList(exercise.getMuscleList());

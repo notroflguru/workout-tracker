@@ -1,5 +1,6 @@
 package notroflguru.workouttracker.exercise.controller;
 
+import jakarta.validation.Valid;
 import notroflguru.workouttracker.exercise.dto.CreateExerciseRequest;
 import notroflguru.workouttracker.exercise.dto.ExerciseResponse;
 import notroflguru.workouttracker.exercise.service.ExerciseService;
@@ -25,7 +26,7 @@ public class ExerciseController {
 
     @PostMapping
     public ResponseEntity<ExerciseResponse> createExercise(
-            @RequestBody CreateExerciseRequest request
+            @RequestBody @Valid CreateExerciseRequest request
             ) {
         ExerciseResponse response = service.createExercise(request);
         return ResponseEntity.ok(response);

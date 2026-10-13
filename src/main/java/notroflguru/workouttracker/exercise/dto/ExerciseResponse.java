@@ -3,9 +3,18 @@ package notroflguru.workouttracker.exercise.dto;
 import java.util.List;
 
 public class ExerciseResponse {
+    private Long id;
     private String name;
     private String description;
     private List<Muscle> muscleList;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 
     public String getName() {
         return name;
