@@ -1,7 +1,10 @@
 package notroflguru.workouttracker.exercise.dto;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+
 import java.util.List;
 
+@JsonPropertyOrder({ "id", "name", "description", "muscleList"})
 public class ExerciseResponse {
     private Long id;
     private String name;

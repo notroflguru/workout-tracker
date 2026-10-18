@@ -10,6 +10,7 @@ import java.util.List;
 public class Exercise {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Long id;
 
     @Column(name = "name", unique = true, nullable = false)
@@ -18,15 +19,14 @@ public class Exercise {
     @Column(name = "description", nullable = false)
     private String description;
 
+    @ElementCollection
+    @CollectionTable(name = "exercise_muscles")   // Вспомогательная таблица exercise - muscle чтобы не хранить списком
     @Column(name = "muscles", nullable = false)
+    @Enumerated(EnumType.STRING)
     private List<Muscle> muscleList;
 
     public Long getId() {
         return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
     }
 
     public String getName() {
@@ -49,7 +49,7 @@ public class Exercise {
         return muscleList;
     }
 
-    public void setMuscleList(List<Muscle> muscleList) {
-        this.muscleList = muscleList;
+    public void setMuscleList(List<Muscle> muscles) {
+        this.muscleList = muscles;
     }
 }
