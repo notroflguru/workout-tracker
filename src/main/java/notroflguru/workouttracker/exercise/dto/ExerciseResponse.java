@@ -1,14 +1,23 @@
 package notroflguru.workouttracker.exercise.dto;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.util.List;
 
 @JsonPropertyOrder({ "id", "name", "description", "muscleList"})
+@Schema(description = "Объект ответа упражнения")
 public class ExerciseResponse {
+    @Schema(description = "Уникальный идентификатор упражнения", example = "2")
     private Long id;
+
+    @Schema(description = "Название упражнения", example = "Squat")
     private String name;
+
+    @Schema(description = "Описание упражнения", example = "Squat with a barbell")
     private String description;
+
+    @Schema(description = "Список мышц, задействующихся в упражнении", example = "[\"Quadriceps\", \"Hamstrings\", \"Glutes\"]")
     private List<Muscle> muscleList;
 
     public Long getId() {

@@ -1,11 +1,24 @@
 package notroflguru.workouttracker.workout.dto.request;
 
+import jakarta.validation.constraints.*;
+
 import java.math.BigDecimal;
 
 public class CreateExerciseSetRequest {
+
+    @Positive
     private BigDecimal weight;
+
+    @Positive
     private int reps;
+
+    @Pattern(
+            regexp = "^\\d+-\\d+$",
+            message = "Строка должна соответствовать формату 1-3"
+    )
     private String rir;
+
+    @Positive
     private int orderNumber;
 
     public BigDecimal getWeight() {

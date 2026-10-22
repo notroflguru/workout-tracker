@@ -1,13 +1,20 @@
 package notroflguru.workouttracker.workout.dto.request;
 
-import notroflguru.workouttracker.workout.model.WorkoutExercise;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
+import org.hibernate.validator.constraints.Length;
 
 import java.time.LocalDate;
 import java.util.List;
 
 public class CreateWorkoutRequest {
+    @NotNull
     private LocalDate date;
+
+    @Length(max = 255, message = "Длина должна быть не более 255 символов")
     private String notes;
+
+    @NotNull @NotEmpty @Valid
     private List<CreateWorkoutExerciseRequest> workoutExerciseRequestList;
 
     public LocalDate getDate() {

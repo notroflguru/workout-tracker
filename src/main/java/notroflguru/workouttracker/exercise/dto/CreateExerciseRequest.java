@@ -7,17 +7,17 @@ import java.util.List;
 public class CreateExerciseRequest {
 
     @NotBlank
-    @Size(min = 5, message = "name is too short")
-    @Size(max = 63, message = "name is too long")
+    @Size(min = 5, message = "Name is too short")
+    @Size(max = 63, message = "Name is too long")
     private String name;
 
-    @Size(min = 5, message = "description is too short")
-    @Size(max = 255, message = "description is too long")
+    @Size(min = 5, message = "Description is too short")
+    @Size(max = 255, message = "Description is too long")
     @NotBlank
     private String description;
 
     @NotEmpty
-    @Size(max = 5, message = "too much muscles")
+    @Size(max = 5, message = "Too much muscles")
     private List<Muscle> muscleList;
 
     public String getName() {

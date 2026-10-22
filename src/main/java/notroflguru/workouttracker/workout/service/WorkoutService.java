@@ -37,20 +37,19 @@ public class WorkoutService {
 
         List<WorkoutExercise> workoutExerciseList = new ArrayList<>();
 
-        for (CreateWorkoutExerciseRequest exerciseRequest : request.getWorkoutExerciseRequestList()) {
+        for (CreateWorkoutExerciseRequest createWorkoutExerciseRequest : request.getWorkoutExerciseRequestList()) {
             Exercise exercise = exerciseRepository.findById(
-                    exerciseRequest.getExerciseId())
-                            .orElseThrow(() -> new ExerciseNotFoundException("Exercise not found: " + exerciseRequest.getExerciseId())
-            );
+                    createWorkoutExerciseRequest.getExerciseId())
+                            .orElseThrow(() -> new ExerciseNotFoundException("Exercise not found: " + createWorkoutExerciseRequest.getExerciseId()));
 
-            WorkoutExercise workoutExercise = mapper.toEntity(exerciseRequest, exercise);
+            WorkoutExercise workoutExercise = mapper.toEntity(createWorkoutExerciseRequest, exercise);
 
             workoutExercise.setWorkout(entity);
             List<ExerciseSet> exerciseSetList = new ArrayList<>();
-            for (CreateExerciseSetRequest setRequest
-                    : exerciseRequest.getExerciseSetRequestList()) {
+            for (CreateExerciseSetRequest createExerciseSetRequest
+                    : createWorkoutExerciseRequest.getExerciseSetRequestList()) {
 
-                ExerciseSet exerciseSet = mapper.toEntity(setRequest);
+                ExerciseSet exerciseSet = mapper.toEntity(createExerciseSetRequest);
                 exerciseSet.setWorkoutExercise(workoutExercise);
                 exerciseSetList.add(exerciseSet);
             }

@@ -1,14 +1,26 @@
 package notroflguru.workouttracker.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.LocalDateTime;
 import java.util.Map;
 
+@Schema(description = "Универсальный объект ответа при возникновении ошибки")
 public class ErrorResponse {
+
+    @Schema(description = "Код ошибки", example = "VALIDATION_FAILED")
     private String code;
+
+    @Schema(description = "Описание ошибки", example = "Request validation failed")
     private String message;
+
+    @Schema(description = "Список ошибок", example = "\"muscleList\": \"не должно быть пустым\"")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Map<String, String> errors;
+
+    @Schema(description = "Временная метка ошибки", example = "2026-01-01 00:01:02")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime time;
 

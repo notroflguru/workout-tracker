@@ -1,11 +1,18 @@
 package notroflguru.workouttracker.workout.dto.request;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
+
 import java.util.List;
 
 public class CreateWorkoutExerciseRequest {
+    @NotNull @Positive
     private Long exerciseId;
-    private String exerciseName;
+
+    @Positive
     private int orderNumber;
+
+    @NotNull @NotEmpty @Valid
     private List<CreateExerciseSetRequest> exerciseSetRequestList;
 
     public Long getExerciseId() {
@@ -14,14 +21,6 @@ public class CreateWorkoutExerciseRequest {
 
     public void setExerciseId(Long exerciseId) {
         this.exerciseId = exerciseId;
-    }
-
-    public String getExerciseName() {
-        return exerciseName;
-    }
-
-    public void setExerciseName(String exerciseName) {
-        this.exerciseName = exerciseName;
     }
 
     public int getOrderNumber() {

@@ -11,6 +11,7 @@ import java.util.List;
 
 @Service
 public class ExerciseService {
+
     private final ExerciseRepository repository;
     private final ExerciseMapper mapper;
 
@@ -31,12 +32,15 @@ public class ExerciseService {
 
         Exercise entity = mapper.toEntity(request);
         Exercise savedEntity = repository.save(entity);
+
         return mapper.toResponse(savedEntity);
     }
 
     public ExerciseResponse findExercise(String name) {
+
         Exercise entity = repository.findByNameIgnoreCase(name)
                 .orElseThrow(() -> new ExerciseNotFoundException("Exercise not found: " + name));
+
         return mapper.toResponse(entity);
     }
 }
