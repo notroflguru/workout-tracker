@@ -7,7 +7,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "workout_exercise")
-// Связующая сущность чтобы добавить упражнение внутрь конкретной тренировки + подходы по этому упражнению
+// Связующая сущность, чтобы добавить упражнение внутрь конкретной тренировки + подходы по этому упражнению
 public class WorkoutExercise {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,6 +23,7 @@ public class WorkoutExercise {
     private Exercise exercise;
 
     @OneToMany(mappedBy = "workoutExercise", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("orderNumber ASC")
     private List<ExerciseSet> exerciseSetList;
 
     @Column(name = "order_number")

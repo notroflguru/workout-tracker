@@ -29,7 +29,43 @@ public class ExerciseController {
     @Operation(summary = "Получить все упражнения",
             description = "Возвращает полную информацию о всех существующих упражнениях",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "Все упражнения успешно получены"),
+                    @ApiResponse(responseCode = "200", description = "Все упражнения успешно получены",
+                    content = @Content(mediaType = "application/json",
+                    examples = @ExampleObject(
+                            value = """
+                                    [
+                                      {
+                                        "id": 1,
+                                        "name": "Deadlift",
+                                        "description": "Deadlift with a barbell",
+                                        "muscleList": [
+                                          "Hamstrings",
+                                          "Glutes"
+                                        ]
+                                      },
+                                      {
+                                        "id": 2,
+                                        "name": "Squat",
+                                        "description": "Squat with a barbell",
+                                        "muscleList": [
+                                          "Quadriceps",
+                                          "Hamstrings",
+                                          "Glutes"
+                                        ]
+                                      },
+                                      {
+                                        "id": 3,
+                                        "name": "Bench press",
+                                        "description": "Bench press with a barbell",
+                                        "muscleList": [
+                                          "Chest",
+                                          "Triceps",
+                                          "Front_delts"
+                                        ]
+                                      }
+                                    ]
+                                    """
+                    ))),
             }
     )
     public ResponseEntity<List<ExerciseResponse>> findAll() {
@@ -39,7 +75,23 @@ public class ExerciseController {
 
     @PostMapping
     @Operation(summary = "Создать новое упражнение", responses = {
-            @ApiResponse(responseCode = "201", description = "Упражнение успешно создано"),
+            @ApiResponse(responseCode = "201", description = "Упражнение успешно создано",
+            content = @Content(mediaType = "application/json",
+            examples = @ExampleObject(
+                    name = "Упражнение успешно создано",
+                    value = """
+                            {
+                              "id": 3,
+                              "name": "Bench press",
+                              "description": "Bench press with a barbell",
+                              "muscleList": [
+                                "Chest",
+                                "Triceps",
+                                "Front_delts"
+                              ]
+                            }
+                            """
+            ))),
             @ApiResponse(responseCode = "400", description = "Некорректные входные данные",
                     content = @Content(mediaType = "application/json",
                             examples = @ExampleObject(

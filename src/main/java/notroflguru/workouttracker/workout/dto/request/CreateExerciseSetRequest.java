@@ -13,8 +13,8 @@ public class CreateExerciseSetRequest {
     private int reps;
 
     @Pattern(
-            regexp = "^\\d+-\\d+$",
-            message = "Строка должна соответствовать формату 1-3"
+            regexp = "^(\\d+-\\d+|\\d+)$", //
+            message = "Строка не соответствует формату диапазон (например, 1-3) или число (например, 2)"
     )
     private String rir;
 
