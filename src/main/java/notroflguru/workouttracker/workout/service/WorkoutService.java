@@ -1,6 +1,7 @@
 package notroflguru.workouttracker.workout.service;
 
 import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
 import notroflguru.workouttracker.exercise.exception.ExerciseNotFoundException;
 import notroflguru.workouttracker.exercise.model.Exercise;
 import notroflguru.workouttracker.exercise.repository.ExerciseRepository;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @Service
 public class WorkoutService {
 
@@ -61,6 +63,9 @@ public class WorkoutService {
         entity.setWorkoutExerciseList(workoutExerciseList);
 
         Workout savedEntity = workoutRepository.save(entity);
+
+        log.info("Successfully created new workout with ID: {}", savedEntity.getId());
+
         return mapper.toResponse(savedEntity);
     }
 }

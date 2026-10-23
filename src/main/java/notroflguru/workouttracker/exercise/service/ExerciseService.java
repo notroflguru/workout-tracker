@@ -1,5 +1,6 @@
 package notroflguru.workouttracker.exercise.service;
 
+import lombok.extern.slf4j.Slf4j;
 import notroflguru.workouttracker.exercise.dto.*;
 import notroflguru.workouttracker.exercise.exception.ExerciseAlreadyExistsException;
 import notroflguru.workouttracker.exercise.exception.ExerciseNotFoundException;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Slf4j
 @Service
 public class ExerciseService {
 
@@ -33,6 +35,8 @@ public class ExerciseService {
         Exercise entity = mapper.toEntity(request);
         Exercise savedEntity = repository.save(entity);
 
+        log.info("Successfully created new exercise with ID: {} and name: {}", savedEntity.getId(), savedEntity.getName());
+
         return mapper.toResponse(savedEntity);
     }
 
@@ -40,6 +44,8 @@ public class ExerciseService {
 
         Exercise entity = repository.findByNameIgnoreCase(name)
                 .orElseThrow(() -> new ExerciseNotFoundException("Exercise not found: " + name));
+
+        log.debug("Successfully found exercise with name: {}", name);
 
         return mapper.toResponse(entity);
     }
