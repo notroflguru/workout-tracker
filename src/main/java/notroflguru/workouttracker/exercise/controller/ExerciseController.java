@@ -131,7 +131,7 @@ public class ExerciseController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @GetMapping("/{name}")
+    @GetMapping("/name/{name}")
     @Operation(summary = "Получить упражнение по имени", description = "Возвращает полную информацию о упражнении", responses = {
             @ApiResponse(responseCode = "200", description = "Упражнение успешно найдено"),
             @ApiResponse(responseCode = "404", description = "Упражнение не найдено",
@@ -148,10 +148,34 @@ public class ExerciseController {
                             """
             )))
     })
-    public ResponseEntity<ExerciseResponse> findExercise(
+    public ResponseEntity<ExerciseResponse> findExerciseByName(
             @PathVariable("name") String name
     ) {
-        ExerciseResponse response = service.findExercise(name);
+        ExerciseResponse response = service.findByName(name);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{id}")
+    @Operation(summary = "Получить упражнение по идентификатору", description = "Возвращает полную информацию о упражнении", responses = {
+            @ApiResponse(responseCode = "200", description = "Упражнение успешно найдено"),
+            @ApiResponse(responseCode = "404", description = "Упражнение не найдено",
+                    content = @Content(mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    name = "Not Found Error",
+                                    summary = "Упражнение не найдено",
+                                    value = """
+                            {
+                              "code": "EXERCISE_NOT_FOUND",
+                              "message": "Exercise not found: deadlift",
+                              "time": "2026-01-01 00:01:02"
+                            }
+                            """
+                            )))
+    })
+    public ResponseEntity<ExerciseResponse> findExerciseById(
+            @PathVariable("id") Long id
+    ) {
+        ExerciseResponse response = service.findById(id);
         return ResponseEntity.ok(response);
     }
 }

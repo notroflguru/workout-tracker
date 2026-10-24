@@ -40,7 +40,7 @@ public class ExerciseService {
         return mapper.toResponse(savedEntity);
     }
 
-    public ExerciseResponse findExercise(String name) {
+    public ExerciseResponse findByName(String name) {
 
         Exercise entity = repository.findByNameIgnoreCase(name)
                 .orElseThrow(() -> new ExerciseNotFoundException("Exercise not found: " + name));
@@ -49,4 +49,15 @@ public class ExerciseService {
 
         return mapper.toResponse(entity);
     }
+
+    public ExerciseResponse findById(Long id) {
+
+        Exercise entity = repository.findById(id)
+                .orElseThrow(() -> new ExerciseNotFoundException("Exercise with id" + id + "was not found"));
+
+        log.debug("Successfully found exercise with id: {}", id);
+
+        return mapper.toResponse(entity);
+    }
+
 }

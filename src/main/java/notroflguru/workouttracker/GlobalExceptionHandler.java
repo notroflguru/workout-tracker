@@ -1,5 +1,6 @@
 package notroflguru.workouttracker;
 
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import lombok.extern.slf4j.Slf4j;
 import notroflguru.workouttracker.dto.ErrorResponse;
 import notroflguru.workouttracker.exercise.exception.ExerciseAlreadyExistsException;
@@ -7,9 +8,11 @@ import notroflguru.workouttracker.exercise.exception.ExerciseNotFoundException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -53,20 +56,22 @@ public class GlobalExceptionHandler {
 
         log.error("Database integrity violation exception caught", exception);
 
-        String rootMsg = exception.getRootCause() != null ? exception.getRootCause().getMessage() : "";
+        String rootMsg = exception.getRootCause() == null
+                ? ""
+                : String.valueOf(exception.getRootCause().getMessage());
 
         if (rootMsg.contains("not-null") || rootMsg.contains("null value")) {
             ErrorResponse errorResponse = new ErrorResponse("DATA_INTEGRITY_VIOLATION", "Пропущено обязательное поле", LocalDateTime.now());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
 
-        if (rootMsg.contains("unique consraint") || rootMsg.contains("duplicate key")) {
+        if (rootMsg.contains("unique constraint") || rootMsg.contains("duplicate key")) {
             ErrorResponse errorResponse = new ErrorResponse("DATA_INTEGRITY_VIOLATION", "Ошибка валидации данных в базе", LocalDateTime.now());
             return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
         }
 
         ErrorResponse errorResponse = new ErrorResponse("DATA_INTEGRITY_VIOLATION", "Ошибка валидации данных в базе", LocalDateTime.now());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
     }
 
     @ExceptionHandler(Exception.class)
@@ -76,5 +81,32 @@ public class GlobalExceptionHandler {
 
         ErrorResponse errorResponse = new ErrorResponse("INTERNAL_SERVER_ERROR", "Внутренняя ошибка сервера", LocalDateTime.now());
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponse> handleHttpMessageNotReadable(HttpMessageNotReadableException exception) {
+        Map<String, String> errors = new HashMap<>();
+
+        if (exception.getCause() instanceof InvalidFormatException) {
+            InvalidFormatException invalidFormatException = (InvalidFormatException) exception.getCause();
+            if (invalidFormatException.getTargetType().equals(java.time.LocalDate.class)) {
+                errors.put("error", "Неверный формат даты. Ожидается формат 'ГГГГ-ММ-ДД' (yyyy-MM-dd).");
+                ErrorResponse errorResponse = new ErrorResponse("WRONG_JSON_FORMAT", "Неверный формат JSON", errors, LocalDateTime.now());
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+            }
+        }
+
+        errors.put("error", "Некорректный JSON запрос. Проверьте синтаксис (кавычки, запятые, скобки).");
+        ErrorResponse errorResponse = new ErrorResponse("WRONG_JSON_FORMAT", "Неверный формат JSON", errors, LocalDateTime.now());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ErrorResponse> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException exception) {
+
+        log.warn("Could not resolve id: {}", exception.getMessage());
+
+        ErrorResponse errorResponse = new ErrorResponse("WRONG_ID", "Could not resolve id", LocalDateTime.now());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
 }
