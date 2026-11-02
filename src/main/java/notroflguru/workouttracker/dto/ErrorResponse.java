@@ -22,19 +22,19 @@ public class ErrorResponse {
 
     @Schema(description = "Временная метка ошибки", example = "2026-01-01 00:01:02")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDateTime time;
+    private LocalDateTime timestamp;
 
-    public ErrorResponse(String code, String message, LocalDateTime time) {
+    public ErrorResponse(String code, String message, LocalDateTime timestamp) {
         this.code = code;
         this.message = message;
-        this.time = time;
+        this.timestamp = timestamp;
     }
 
-    public ErrorResponse(String code, String message, Map<String, String> errors, LocalDateTime time) {
+    public ErrorResponse(String code, String message, Map<String, String> errors, LocalDateTime timestamp) {
         this.code = code;
         this.message = message;
         this.errors = errors;
-        this.time = time;
+        this.timestamp = timestamp;
     }
 
     public String getCode() {
@@ -53,12 +53,12 @@ public class ErrorResponse {
         this.message = message;
     }
 
-    public LocalDateTime getTime() {
-        return time;
+    public LocalDateTime getTimestamp() {
+        return timestamp;
     }
 
-    public void setTime(LocalDateTime time) {
-        this.time = time;
+    public void setTimestamp(LocalDateTime timestamp) {
+        this.timestamp = timestamp;
     }
 
     public Map<String, String> getErrors() {

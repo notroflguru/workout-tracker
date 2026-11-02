@@ -8,9 +8,11 @@ import notroflguru.workouttracker.exercise.repository.ExerciseRepository;
 import notroflguru.workouttracker.workout.dto.request.CreateExerciseSetRequest;
 import notroflguru.workouttracker.workout.dto.request.CreateWorkoutExerciseRequest;
 import notroflguru.workouttracker.workout.dto.request.CreateWorkoutRequest;
+import notroflguru.workouttracker.workout.dto.request.PatchWorkoutRequest;
 import notroflguru.workouttracker.workout.dto.response.ExerciseSetResponse;
 import notroflguru.workouttracker.workout.dto.response.WorkoutExerciseResponse;
 import notroflguru.workouttracker.workout.dto.response.WorkoutResponse;
+import notroflguru.workouttracker.workout.exception.WorkoutNotFoundException;
 import notroflguru.workouttracker.workout.repository.ExerciseSetRepository;
 import notroflguru.workouttracker.workout.repository.WorkoutExerciseRepository;
 import notroflguru.workouttracker.workout.repository.WorkoutRepository;
@@ -33,8 +35,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 @Testcontainers
 @SpringBootTest
@@ -257,5 +258,187 @@ public class WorkoutServiceTest {
         request.setOrderNumber(orderNumber);
 
         return request;
+    }
+
+    @Test
+    @DisplayName("Should find workout by ID")
+    void findWorkoutById_ReturnsWorkout() {
+        WorkoutResponse createdWorkout =
+                workoutService.createWorkout(createWorkoutRequest());
+
+        entityManager.clear();
+
+        WorkoutResponse foundWorkout =
+                workoutService.findWorkoutById(createdWorkout.getId());
+
+        assertNotNull(foundWorkout);
+        assertEquals(createdWorkout.getId(), foundWorkout.getId());
+        assertEquals(LocalDate.now(), foundWorkout.getDate());
+        assertEquals("Первая тренировка", foundWorkout.getNotes());
+        assertEquals(2, foundWorkout.getWorkoutExerciseResponseList().size());
+        assertEquals(4,
+                foundWorkout.getWorkoutExerciseResponseList()
+                        .stream()
+                        .mapToInt(exercise ->
+                                exercise.getExerciseSetResponseList().size())
+                        .sum());
+    }
+
+    @Test
+    @DisplayName("Should throw exception when workout does not exist")
+    void findWorkoutById_WhenWorkoutDoesNotExist_ThrowsException() {
+        assertThrows(
+                WorkoutNotFoundException.class,
+                () -> workoutService.findWorkoutById(999L)
+        );
+    }
+
+    @Test
+    @DisplayName("Should patch workout date and notes")
+    void updateWorkout_UpdatesDateAndNotes() {
+        WorkoutResponse createdWorkout =
+                workoutService.createWorkout(createWorkoutRequest());
+
+        Long workoutId = createdWorkout.getId();
+        LocalDate newDate = LocalDate.of(2026, 11, 2);
+
+        PatchWorkoutRequest request = new PatchWorkoutRequest();
+        request.setDate(newDate);
+        request.setNotes("Обновлённая тренировка");
+
+        WorkoutResponse patchedWorkout =
+                workoutService.updateWorkout(workoutId, request);
+
+        assertEquals(workoutId, patchedWorkout.getId());
+        assertEquals(newDate, patchedWorkout.getDate());
+        assertEquals("Обновлённая тренировка", patchedWorkout.getNotes());
+        assertEquals(2, patchedWorkout.getWorkoutExerciseResponseList().size());
+        assertEquals(4,
+                patchedWorkout.getWorkoutExerciseResponseList()
+                        .stream()
+                        .mapToInt(exercise ->
+                                exercise.getExerciseSetResponseList().size())
+                        .sum());
+    }
+
+    @Test
+    @DisplayName("Should patch only workout date")
+    void updateWorkout_UpdatesOnlyDate() {
+        WorkoutResponse createdWorkout =
+                workoutService.createWorkout(createWorkoutRequest());
+
+        PatchWorkoutRequest request = new PatchWorkoutRequest();
+        request.setDate(LocalDate.of(2026, 11, 2));
+
+        WorkoutResponse patchedWorkout =
+                workoutService.updateWorkout(createdWorkout.getId(), request);
+
+        assertEquals(LocalDate.of(2026, 11, 2), patchedWorkout.getDate());
+        assertEquals("Первая тренировка", patchedWorkout.getNotes());
+    }
+
+    @Test
+    @DisplayName("Should patch only workout notes")
+    void updateWorkout_UpdatesOnlyNotes() {
+        WorkoutResponse createdWorkout =
+                workoutService.createWorkout(createWorkoutRequest());
+
+        PatchWorkoutRequest request = new PatchWorkoutRequest();
+        request.setNotes("Только новые заметки");
+
+        WorkoutResponse patchedWorkout =
+                workoutService.updateWorkout(createdWorkout.getId(), request);
+
+        assertEquals(LocalDate.now(), patchedWorkout.getDate());
+        assertEquals("Только новые заметки", patchedWorkout.getNotes());
+    }
+
+    @Test
+    @DisplayName("Should throw exception when patching nonexistent workout")
+    void updateWorkout_WhenWorkoutDoesNotExist_ThrowsException() {
+        PatchWorkoutRequest request = new PatchWorkoutRequest();
+        request.setNotes("Новая заметка");
+
+        assertThrows(
+                WorkoutNotFoundException.class,
+                () -> workoutService.updateWorkout(999L, request)
+        );
+    }
+
+    @Test
+    @DisplayName("Should persist patched workout data")
+    void updateWorkout_ShouldPersistChanges() {
+        WorkoutResponse createdWorkout =
+                workoutService.createWorkout(createWorkoutRequest());
+
+        PatchWorkoutRequest request = new PatchWorkoutRequest();
+        request.setDate(LocalDate.of(2026, 11, 2));
+        request.setNotes("Сохранённые изменения");
+
+        workoutService.updateWorkout(createdWorkout.getId(), request);
+
+        entityManager.clear();
+
+        WorkoutResponse savedWorkout =
+                workoutService.findWorkoutById(createdWorkout.getId());
+
+        assertEquals(LocalDate.of(2026, 11, 2), savedWorkout.getDate());
+        assertEquals("Сохранённые изменения", savedWorkout.getNotes());
+    }
+
+    @Test
+    @DisplayName("Should clear workout notes when notes is explicitly null")
+    void updateWorkout_WhenNotesIsNull_ClearsNotes() {
+        WorkoutResponse createdWorkout =
+                workoutService.createWorkout(createWorkoutRequest());
+
+        PatchWorkoutRequest request = new PatchWorkoutRequest();
+        request.setNotes(null);
+
+        assertTrue(request.areNotesProvided());
+
+        WorkoutResponse patchedWorkout =
+                workoutService.updateWorkout(createdWorkout.getId(), request);
+
+        assertEquals("", patchedWorkout.getNotes());
+        assertEquals(LocalDate.now(), patchedWorkout.getDate());
+        assertEquals(2, patchedWorkout.getWorkoutExerciseResponseList().size());
+    }
+
+    @Test
+    @DisplayName("Should preserve notes when notes field is absent")
+    void updateWorkout_WhenNotesIsAbsent_PreservesNotes() {
+        WorkoutResponse createdWorkout =
+                workoutService.createWorkout(createWorkoutRequest());
+
+        PatchWorkoutRequest request = new PatchWorkoutRequest();
+        request.setDate(LocalDate.of(2026, 11, 2));
+
+        assertFalse(request.areNotesProvided());
+
+        WorkoutResponse patchedWorkout =
+                workoutService.updateWorkout(createdWorkout.getId(), request);
+
+        assertEquals(LocalDate.of(2026, 11, 2), patchedWorkout.getDate());
+        assertEquals("Первая тренировка", patchedWorkout.getNotes());
+    }
+
+    @Test
+    @DisplayName("Should persist cleared workout notes")
+    void updateWorkout_WhenNotesIsNull_PersistsClearedNotes() {
+        WorkoutResponse createdWorkout =
+                workoutService.createWorkout(createWorkoutRequest());
+
+        PatchWorkoutRequest request = new PatchWorkoutRequest();
+        request.setNotes(null);
+
+        workoutService.updateWorkout(createdWorkout.getId(), request);
+
+        entityManager.clear();
+
+        WorkoutResponse savedWorkout =
+                workoutService.findWorkoutById(createdWorkout.getId());
+
+        assertEquals("", savedWorkout.getNotes());
     }
 }

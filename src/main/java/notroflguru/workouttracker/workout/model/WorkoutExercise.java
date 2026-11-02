@@ -2,7 +2,9 @@ package notroflguru.workouttracker.workout.model;
 
 import jakarta.persistence.*;
 import notroflguru.workouttracker.exercise.model.Exercise;
+import org.hibernate.annotations.BatchSize;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -24,7 +26,8 @@ public class WorkoutExercise {
 
     @OneToMany(mappedBy = "workoutExercise", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("orderNumber ASC")
-    private List<ExerciseSet> exerciseSetList;
+    @BatchSize(size = 30)
+    private List<ExerciseSet> exerciseSetList = new ArrayList<>();
 
     @Column(name = "order_number")
     private int orderNumber;
@@ -63,5 +66,10 @@ public class WorkoutExercise {
 
     public void setOrderNumber(int orderNumber) {
         this.orderNumber = orderNumber;
+    }
+
+    public void addExerciseSet(ExerciseSet exerciseSet) {
+        exerciseSetList.add(exerciseSet);
+        exerciseSet.setWorkoutExercise(this);
     }
 }

@@ -1,9 +1,11 @@
 package notroflguru.workouttracker.workout.controller;
 
+import notroflguru.workouttracker.workout.dto.request.PatchWorkoutRequest;
 import notroflguru.workouttracker.workout.dto.response.ExerciseSetResponse;
 import notroflguru.workouttracker.workout.dto.response.WorkoutExerciseResponse;
 import notroflguru.workouttracker.workout.dto.response.WorkoutResponse;
 import notroflguru.workouttracker.workout.service.WorkoutService;
+import notroflguru.workouttracker.workout.exception.WorkoutNotFoundException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -14,16 +16,22 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.List;
 
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.mockito.Mockito.verify;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 
 @WebMvcTest(WorkoutController.class)
 @ActiveProfiles("test")
@@ -79,7 +87,7 @@ public class WorkoutControllerTest {
         mockResponse.setNotes("Тестовая тренировка");
         mockResponse.setWorkoutExerciseResponseList(List.of(exerciseResponse));
 
-        Mockito.when(workoutService.createWorkout(Mockito.any()))
+        when(workoutService.createWorkout(Mockito.any()))
                 .thenReturn(mockResponse);
 
         mockMvc.perform(post("/api/workout")
@@ -293,5 +301,226 @@ public class WorkoutControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
                 .andExpect(status().isBadRequest());
+    }
+    private WorkoutResponse createWorkoutResponse() {
+        ExerciseSetResponse setResponse = new ExerciseSetResponse();
+        setResponse.setId(1L);
+        setResponse.setWeight(new BigDecimal("100.0"));
+        setResponse.setReps(8);
+        setResponse.setRir("2");
+        setResponse.setOrderNumber(1);
+
+        WorkoutExerciseResponse exerciseResponse = new WorkoutExerciseResponse();
+        exerciseResponse.setId(1L);
+        exerciseResponse.setExerciseId(2L);
+        exerciseResponse.setExerciseName("Bench press");
+        exerciseResponse.setOrderNumber(1);
+        exerciseResponse.setExerciseSetResponseList(List.of(setResponse));
+
+        WorkoutResponse response = new WorkoutResponse();
+        response.setId(1L);
+        response.setDate(LocalDate.of(2026, Month.OCTOBER, 22));
+        response.setNotes("Тестовая тренировка");
+        response.setWorkoutExerciseResponseList(List.of(exerciseResponse));
+
+        return response;
+    }
+
+    @Test
+    @DisplayName("Should return workout by ID and HTTP 200")
+    void findWorkoutById_Returns200() throws Exception {
+        WorkoutResponse response = createWorkoutResponse();
+
+        when(workoutService.findWorkoutById(1L))
+                .thenReturn(response);
+
+        mockMvc.perform(get("/api/workout/{id}", 1L)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.date").value("2026-10-22"))
+                .andExpect(jsonPath("$.notes").value("Тестовая тренировка"))
+                .andExpect(jsonPath("$.workoutExerciseResponseList[0].exerciseId").value(2))
+                .andExpect(jsonPath("$.workoutExerciseResponseList[0].exerciseName").value("Bench press"));
+    }
+
+    @Test
+    @DisplayName("Should return 404 when workout does not exist")
+    void findWorkoutById_NotFound_Returns404() throws Exception {
+        when(workoutService.findWorkoutById(999L))
+                .thenThrow(new WorkoutNotFoundException("Workout not found"));
+
+        mockMvc.perform(get("/api/workout/{id}", 999L))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("WORKOUT_NOT_FOUND"))
+                .andExpect(jsonPath("$.message").value("Could not find workout"));
+    }
+
+    @Test
+    @DisplayName("Should return 400 when workout ID is invalid")
+    void findWorkoutById_InvalidId_Returns400() throws Exception {
+        mockMvc.perform(get("/api/workout/{id}", "abc"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("WRONG_ID"));
+    }
+
+    @Test
+    @DisplayName("Should partially update workout and return 200")
+    void patchWorkout_Returns200() throws Exception {
+        String requestJson = """
+            {
+              "date": "2026-11-02",
+              "notes": "Обновлённая тренировка"
+            }
+            """;
+
+        WorkoutResponse response = createWorkoutResponse();
+        response.setDate(LocalDate.of(2026, Month.NOVEMBER, 2));
+        response.setNotes("Обновлённая тренировка");
+
+        when(workoutService.updateWorkout(
+                anyLong(),
+                any(notroflguru.workouttracker.workout.dto.request.PatchWorkoutRequest.class)
+        )).thenReturn(response);
+
+        mockMvc.perform(patch("/api/workout/{id}", 1L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(requestJson))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.date").value("2026-11-02"))
+                .andExpect(jsonPath("$.notes").value("Обновлённая тренировка"));
+
+        verify(workoutService).updateWorkout(
+                eq(1L),
+                any(PatchWorkoutRequest.class)
+        );
+    }
+
+    @Test
+    @DisplayName("Should accept empty PATCH body without changing workout")
+    void patchWorkout_EmptyBody_Returns200() throws Exception {
+        WorkoutResponse response = createWorkoutResponse();
+
+        when(workoutService.updateWorkout(
+                eq(1L),
+                any(PatchWorkoutRequest.class)
+        )).thenReturn(response);
+
+        mockMvc.perform(patch("/api/workout/{id}", 1L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.date").value("2026-10-22"))
+                .andExpect(jsonPath("$.notes").value("Тестовая тренировка"));
+
+        verify(workoutService).updateWorkout(
+                eq(1L),
+                any(PatchWorkoutRequest.class)
+        );
+    }
+
+    @Test
+    @DisplayName("Should return 400 when PATCH notes are too long")
+    void patchWorkout_NotesTooLong_Returns400() throws Exception {
+        String tooLongNotes = "a".repeat(256);
+
+        String requestJson = """
+            {
+              "notes": "%s"
+            }
+            """.formatted(tooLongNotes);
+
+        mockMvc.perform(patch("/api/workout/{id}", 1L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestJson))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"));
+    }
+
+    @Test
+    @DisplayName("Should return 404 when PATCH target does not exist")
+    void patchWorkout_NotFound_Returns404() throws Exception {
+        String requestJson = """
+            {
+              "notes": "Новая заметка"
+            }
+            """;
+
+        when(workoutService.updateWorkout(
+                anyLong(),
+                any(PatchWorkoutRequest.class)
+        )).thenThrow(new WorkoutNotFoundException("Workout not found"));
+
+        mockMvc.perform(patch("/api/workout/{id}", 999L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestJson))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("WORKOUT_NOT_FOUND"));
+    }
+
+    @Test
+    @DisplayName("Should accept null notes in PATCH request")
+    void patchWorkout_NullNotes_Returns200() throws Exception {
+        String requestJson = """
+            {
+              "notes": null
+            }
+            """;
+
+        WorkoutResponse response = createWorkoutResponse();
+        response.setNotes("");
+
+        when(workoutService.updateWorkout(
+                eq(1L),
+                any(PatchWorkoutRequest.class)
+        )).thenReturn(response);
+
+        mockMvc.perform(patch("/api/workout/{id}", 1L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(requestJson))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.notes").value(""));
+
+        verify(workoutService).updateWorkout(
+                eq(1L),
+                argThat(request ->
+                        request.areNotesProvided()
+                                && request.getNotes() == null
+                ));
+    }
+
+    @Test
+    @DisplayName("Should update only date when notes is absent")
+    void patchWorkout_OnlyDate_Returns200() throws Exception {
+        String requestJson = """
+            {
+              "date": "2026-11-02"
+            }
+            """;
+
+        WorkoutResponse response = createWorkoutResponse();
+        response.setDate(LocalDate.of(2026, Month.NOVEMBER, 2));
+
+        when(workoutService.updateWorkout(
+                eq(1L),
+                argThat(request ->
+                        request.getDate().equals(LocalDate.of(2026, 11, 2))
+                                && !request.areNotesProvided()
+                )
+        )).thenReturn(response);
+
+        mockMvc.perform(patch("/api/workout/{id}", 1L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(requestJson))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.date").value("2026-11-02"))
+                .andExpect(jsonPath("$.notes").value("Тестовая тренировка"));
     }
 }

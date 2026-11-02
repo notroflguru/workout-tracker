@@ -6,15 +6,13 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import notroflguru.workouttracker.workout.dto.request.PatchWorkoutRequest;
 import notroflguru.workouttracker.workout.dto.response.WorkoutResponse;
 import notroflguru.workouttracker.workout.dto.request.CreateWorkoutRequest;
 import notroflguru.workouttracker.workout.service.WorkoutService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/workout")
@@ -77,15 +75,212 @@ public class WorkoutController {
                                           "notes": "Длина должна быть не более 255 символов"
                                       },
                                       "message": "Request validation failed",
-                                      "time": "2026-01-01 00:01:02"
+                                      "timestamp": "2026-01-01 00:01:02"
                                     }
                                     """
-                    )))
+                    ))),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Некорректный формат ID",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    name = "Wrong ID",
+                                    summary = "ID имеет неверный формат",
+                                    value = """
+                                {
+                                  "code": "WRONG_ID",
+                                  "message": "Could not resolve id",
+                                  "timestamp": "2026-01-01 00:01:02"
+                                }
+                                """
+                            )
+                    )
+            )
     })
     public ResponseEntity<WorkoutResponse> createWorkout (
-        @RequestBody @Valid CreateWorkoutRequest request
+        @Valid @RequestBody CreateWorkoutRequest request
     ) {
         WorkoutResponse response = service.createWorkout(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @GetMapping("/{id}")
+    @Operation(
+            summary = "Получить тренировку по ID",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Тренировка успешно найдена",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    examples = @ExampleObject(
+                                            name = "Тренировка найдена",
+                                            value = """
+                                                {
+                                                  "id": 9,
+                                                  "date": "2026-10-22",
+                                                  "notes": "Четвертая",
+                                                  "workoutExerciseResponseList": [
+                                                    {
+                                                      "id": 9,
+                                                      "exerciseId": 2,
+                                                      "exerciseName": "Squat",
+                                                      "orderNumber": 1,
+                                                      "exerciseSetResponseList": [
+                                                        {
+                                                          "id": 10,
+                                                          "weight": 70.0,
+                                                          "reps": 8,
+                                                          "rir": "2-3",
+                                                          "orderNumber": 1
+                                                        },
+                                                        {
+                                                          "id": 11,
+                                                          "weight": 75.0,
+                                                          "reps": 5,
+                                                          "rir": "1-2",
+                                                          "orderNumber": 2
+                                                        }
+                                                      ]
+                                                    }
+                                                  ]
+                                                }
+                                                """
+                                    )
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "404",
+                            description = "Тренировка не найдена",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    examples = @ExampleObject(
+                                            name = "Workout Not Found",
+                                            summary = "Тренировка с указанным ID не существует",
+                                            value = """
+                                                {
+                                                  "code": "WORKOUT_NOT_FOUND",
+                                                  "message": "Could not find workout",
+                                                  "timestamp": "2026-01-01 00:01:02"
+                                                }
+                                                """
+                                    )
+                            )
+                    )
+            }
+    )
+    public ResponseEntity<WorkoutResponse> findById (
+            @PathVariable("id") Long id
+    ) {
+        WorkoutResponse response = service.findWorkoutById(id);
+        return ResponseEntity.ok(response);
+    }
+
+    @PatchMapping("/{id}")
+    @Operation(
+            summary = "Обновить тренировку по ID",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Тренировка успешно обновлена",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    examples = @ExampleObject(
+                                            name = "Тренировка обновлена",
+                                            value = """
+                                                {
+                                                  "id": 9,
+                                                  "date": "2026-10-22",
+                                                  "notes": "Четвертая",
+                                                  "workoutExerciseResponseList": [
+                                                    {
+                                                      "id": 9,
+                                                      "exerciseId": 2,
+                                                      "exerciseName": "Squat",
+                                                      "orderNumber": 1,
+                                                      "exerciseSetResponseList": [
+                                                        {
+                                                          "id": 10,
+                                                          "weight": 70.0,
+                                                          "reps": 8,
+                                                          "rir": "2-3",
+                                                          "orderNumber": 1
+                                                        },
+                                                        {
+                                                          "id": 11,
+                                                          "weight": 75.0,
+                                                          "reps": 5,
+                                                          "rir": "1-2",
+                                                          "orderNumber": 2
+                                                        }
+                                                      ]
+                                                    }
+                                                  ]
+                                                }
+                                                """
+                                    )
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "400",
+                            description = "Некорректные входные данные или формат ID",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    examples = {
+                                            @ExampleObject(
+                                                    name = "Validation Error",
+                                                    summary = "Ошибка валидации полей",
+                                                    value = """
+                                                        {
+                                                          "code": "VALIDATION_FAILED",
+                                                          "errors": {
+                                                            "notes": "Длина должна быть не более 255 символов"
+                                                          },
+                                                          "message": "Request validation failed",
+                                                          "time": "2026-01-01 00:01:02"
+                                                        }
+                                                        """
+                                            ),
+                                            @ExampleObject(
+                                                    name = "Wrong ID",
+                                                    summary = "ID имеет неверный формат",
+                                                    value = """
+                                                        {
+                                                          "code": "WRONG_ID",
+                                                          "message": "Could not resolve id",
+                                                          "time": "2026-01-01T00:01:02"
+                                                        }
+                                                        """
+                                            )
+                                    }
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "404",
+                            description = "Тренировка не найдена",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    examples = @ExampleObject(
+                                            name = "Workout Not Found",
+                                            summary = "Тренировка с указанным ID не существует",
+                                            value = """
+                                                {
+                                                  "code": "WORKOUT_NOT_FOUND",
+                                                  "message": "Workout not found",
+                                                  "time": "2026-01-01T00:01:02"
+                                                }
+                                                """
+                                    )
+                            )
+                    )
+            }
+    )
+    public ResponseEntity<WorkoutResponse> patchWorkout(
+            @PathVariable Long id,
+            @Valid @RequestBody PatchWorkoutRequest request
+    ) {
+        WorkoutResponse response = service.updateWorkout(id, request);
+        return ResponseEntity.ok(response);
     }
 }

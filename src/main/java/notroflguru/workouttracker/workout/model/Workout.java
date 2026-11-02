@@ -3,6 +3,7 @@ package notroflguru.workouttracker.workout.model;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -23,7 +24,7 @@ public class Workout {
     // cascade = CascadeType.ALL все действия с родительским объектом автоматически совершаются и с дочерним
     // orphanRemoval = true удаляет дочерний объект тогда, когда его отвязывают от родительского
     @OrderBy("orderNumber ASC")
-    private List<WorkoutExercise> workoutExerciseList;
+    private List<WorkoutExercise> workoutExerciseList = new ArrayList<>();
 
     public Long getId() {
         return id;
@@ -49,7 +50,13 @@ public class Workout {
         return workoutExerciseList;
     }
 
-    public void setWorkoutExerciseList(List<WorkoutExercise> workoutExerciseList) {
-        this.workoutExerciseList = workoutExerciseList;
+    public void addWorkoutExercise(WorkoutExercise workoutExercise) {
+        workoutExerciseList.add(workoutExercise);
+        workoutExercise.setWorkout(this);
     }
+
+    public void removeAllWorkoutExercises() {
+        workoutExerciseList.clear();
+    }
+
 }

@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import notroflguru.workouttracker.dto.ErrorResponse;
 import notroflguru.workouttracker.exercise.exception.ExerciseAlreadyExistsException;
 import notroflguru.workouttracker.exercise.exception.ExerciseNotFoundException;
+import notroflguru.workouttracker.workout.exception.WorkoutNotFoundException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -108,5 +109,14 @@ public class GlobalExceptionHandler {
 
         ErrorResponse errorResponse = new ErrorResponse("WRONG_ID", "Could not resolve id", LocalDateTime.now());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    }
+
+    @ExceptionHandler(WorkoutNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleWorkoutNotFoundException(WorkoutNotFoundException exception) {
+
+        log.warn("Could not find workout: {}", exception.getMessage());
+
+        ErrorResponse errorResponse = new ErrorResponse("WORKOUT_NOT_FOUND", "Could not find workout", LocalDateTime.now());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
     }
 }
