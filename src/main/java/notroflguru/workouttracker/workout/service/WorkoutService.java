@@ -9,6 +9,7 @@ import notroflguru.workouttracker.workout.dto.request.CreateWorkoutExerciseReque
 import notroflguru.workouttracker.workout.dto.request.CreateWorkoutRequest;
 import notroflguru.workouttracker.workout.dto.WorkoutMapper;
 import notroflguru.workouttracker.workout.dto.request.PatchWorkoutRequest;
+import notroflguru.workouttracker.workout.dto.response.ShortWorkoutResponse;
 import notroflguru.workouttracker.workout.dto.response.WorkoutResponse;
 import notroflguru.workouttracker.workout.exception.WorkoutNotFoundException;
 import notroflguru.workouttracker.workout.model.Workout;
@@ -119,7 +120,7 @@ public class WorkoutService {
         return mapper.toResponse(entity);
     }
 
-    @Transactional
+    @Transactional // Нужно для автоматического обновления данных в базе данных при изменении значений полей сущности
     public WorkoutResponse updateWorkout(
             Long id,
             PatchWorkoutRequest request
@@ -138,8 +139,30 @@ public class WorkoutService {
             );
         }
 
-        log.info("Successfully patched workout with ID: {}", workout.getId());
+        log.info("Successfully patched workout with ID: {}", id);
 
         return mapper.toResponse(workout);
+    }
+
+    public void deleteWorkout(Long id) {
+        findById(id);
+
+        log.info("Successfully delete workout with ID: {}", id);
+
+        workoutRepository.deleteById(id);
+    }
+
+    public List<ShortWorkoutResponse> findAll() {
+        return mapper.toShortResponseList(workoutRepository.findAll());
+    }
+
+    @Transactional
+    public WorkoutResponse replaceWorkout(
+            Long id,
+            CreateWorkoutRequest request
+    ) {
+        Workout workout = findById(id);
+
+        return saveWorkout(workout, request);
     }
 }

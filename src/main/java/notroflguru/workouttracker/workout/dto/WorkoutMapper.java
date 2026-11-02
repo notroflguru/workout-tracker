@@ -1,17 +1,19 @@
 package notroflguru.workouttracker.workout.dto;
 
-import notroflguru.workouttracker.exercise.dto.CreateExerciseRequest;
 import notroflguru.workouttracker.exercise.model.Exercise;
 import notroflguru.workouttracker.workout.dto.request.CreateExerciseSetRequest;
 import notroflguru.workouttracker.workout.dto.request.CreateWorkoutExerciseRequest;
 import notroflguru.workouttracker.workout.dto.request.CreateWorkoutRequest;
 import notroflguru.workouttracker.workout.dto.response.ExerciseSetResponse;
+import notroflguru.workouttracker.workout.dto.response.ShortWorkoutResponse;
 import notroflguru.workouttracker.workout.dto.response.WorkoutExerciseResponse;
 import notroflguru.workouttracker.workout.dto.response.WorkoutResponse;
 import notroflguru.workouttracker.workout.model.ExerciseSet;
 import notroflguru.workouttracker.workout.model.Workout;
 import notroflguru.workouttracker.workout.model.WorkoutExercise;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 public class WorkoutMapper {
@@ -85,5 +87,17 @@ public class WorkoutMapper {
         response.setRir(entity.getRir());
 
         return response;
+    }
+    public ShortWorkoutResponse toShortResponse(Workout entity) {
+        ShortWorkoutResponse response = new ShortWorkoutResponse();
+
+        response.setId(entity.getId());
+        response.setDate(entity.getDate());
+
+        return response;
+    }
+
+    public List<ShortWorkoutResponse> toShortResponseList(List<Workout> workoutList) {
+        return workoutList.stream().map(this::toShortResponse).toList();
     }
 }

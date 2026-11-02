@@ -10,6 +10,7 @@ import notroflguru.workouttracker.workout.dto.request.CreateWorkoutExerciseReque
 import notroflguru.workouttracker.workout.dto.request.CreateWorkoutRequest;
 import notroflguru.workouttracker.workout.dto.request.PatchWorkoutRequest;
 import notroflguru.workouttracker.workout.dto.response.ExerciseSetResponse;
+import notroflguru.workouttracker.workout.dto.response.ShortWorkoutResponse;
 import notroflguru.workouttracker.workout.dto.response.WorkoutExerciseResponse;
 import notroflguru.workouttracker.workout.dto.response.WorkoutResponse;
 import notroflguru.workouttracker.workout.exception.WorkoutNotFoundException;
@@ -95,6 +96,37 @@ public class WorkoutServiceTest {
         exercise2.setDescription("");
         exercise2.setMuscleList(List.of(Muscle.Hamstrings, Muscle.Glutes));
         exerciseRepository.save(exercise2);
+    }
+    private CreateWorkoutRequest createWorkoutRequest() {
+
+        CreateExerciseSetRequest exerciseSetRequest1 = createExerciseSetRequest(120.0, 5, "2-3", 1);
+        CreateExerciseSetRequest exerciseSetRequest2 = createExerciseSetRequest(125.0, 3, "1", 2);
+        CreateExerciseSetRequest exerciseSetRequest3 = createExerciseSetRequest(160.0, 5, "5-6", 1);
+        CreateExerciseSetRequest exerciseSetRequest4 = createExerciseSetRequest(180.0, 3, "2-3", 2);
+
+
+        List<CreateExerciseSetRequest> exerciseSetRequestList1 = new ArrayList<>();
+        exerciseSetRequestList1.add(exerciseSetRequest1);
+        exerciseSetRequestList1.add(exerciseSetRequest2);
+
+        List<CreateExerciseSetRequest> exerciseSetRequestList2 = new ArrayList<>();
+        exerciseSetRequestList2.add(exerciseSetRequest3);
+        exerciseSetRequestList2.add(exerciseSetRequest4);
+
+        CreateWorkoutExerciseRequest workoutExerciseRequest1 = createWorkoutExerciseRequest(exerciseSetRequestList1, exercise1.getId(), 1);
+        CreateWorkoutExerciseRequest workoutExerciseRequest2 = createWorkoutExerciseRequest(exerciseSetRequestList2, exercise2.getId(), 2);
+
+
+        List<CreateWorkoutExerciseRequest> workoutExerciseRequestList = new ArrayList<>();
+        workoutExerciseRequestList.add(workoutExerciseRequest1);
+        workoutExerciseRequestList.add(workoutExerciseRequest2);
+
+        CreateWorkoutRequest request = new CreateWorkoutRequest();
+        request.setDate(LocalDate.now());
+        request.setNotes("Первая тренировка");
+        request.setWorkoutExerciseRequestList(workoutExerciseRequestList);
+
+        return request;
     }
 
     // Успешное создание тренировки с каскадной записью в соответствующие таблицы
@@ -205,37 +237,7 @@ public class WorkoutServiceTest {
         assertEquals(4, exerciseSets.size());
     }
 
-    private CreateWorkoutRequest createWorkoutRequest() {
 
-        CreateExerciseSetRequest exerciseSetRequest1 = createExerciseSetRequest(120.0, 5, "2-3", 1);
-        CreateExerciseSetRequest exerciseSetRequest2 = createExerciseSetRequest(125.0, 3, "1", 2);
-        CreateExerciseSetRequest exerciseSetRequest3 = createExerciseSetRequest(160.0, 5, "5-6", 1);
-        CreateExerciseSetRequest exerciseSetRequest4 = createExerciseSetRequest(180.0, 3, "2-3", 2);
-
-
-        List<CreateExerciseSetRequest> exerciseSetRequestList1 = new ArrayList<>();
-        exerciseSetRequestList1.add(exerciseSetRequest1);
-        exerciseSetRequestList1.add(exerciseSetRequest2);
-
-        List<CreateExerciseSetRequest> exerciseSetRequestList2 = new ArrayList<>();
-        exerciseSetRequestList2.add(exerciseSetRequest3);
-        exerciseSetRequestList2.add(exerciseSetRequest4);
-
-        CreateWorkoutExerciseRequest workoutExerciseRequest1 = createWorkoutExerciseRequest(exerciseSetRequestList1, exercise1.getId(), 1);
-        CreateWorkoutExerciseRequest workoutExerciseRequest2 = createWorkoutExerciseRequest(exerciseSetRequestList2, exercise2.getId(), 2);
-
-
-        List<CreateWorkoutExerciseRequest> workoutExerciseRequestList = new ArrayList<>();
-        workoutExerciseRequestList.add(workoutExerciseRequest1);
-        workoutExerciseRequestList.add(workoutExerciseRequest2);
-
-        CreateWorkoutRequest request = new CreateWorkoutRequest();
-        request.setDate(LocalDate.now());
-        request.setNotes("Первая тренировка");
-        request.setWorkoutExerciseRequestList(workoutExerciseRequestList);
-
-        return request;
-    }
 
     private CreateExerciseSetRequest createExerciseSetRequest(double weight, int reps, String rir, int orderNumber) {
 
@@ -440,5 +442,109 @@ public class WorkoutServiceTest {
                 workoutService.findWorkoutById(createdWorkout.getId());
 
         assertEquals("", savedWorkout.getNotes());
+    }
+
+    @Test
+    @DisplayName("Should successfully delete workout")
+    void deleteWorkout_returnsVoid() {
+        WorkoutResponse createdWorkout =
+                workoutService.createWorkout(createWorkoutRequest());
+
+        entityManager.clear();
+
+        workoutService.deleteWorkout(createdWorkout.getId());
+
+        assertThrows(WorkoutNotFoundException.class, () -> {
+            workoutService.findWorkoutById(createdWorkout.getId());
+        });
+    }
+
+    @Test
+    @DisplayName("Should delete workout with exercises and sets")
+    void deleteWorkout_DeletesWorkoutGraph() {
+        WorkoutResponse createdWorkout =
+                workoutService.createWorkout(createWorkoutRequest());
+
+        Long workoutId = createdWorkout.getId();
+
+        assertEquals(1, workoutRepository.count());
+        assertEquals(2, workoutExerciseRepository.count());
+        assertEquals(4, exerciseSetRepository.count());
+
+        workoutService.deleteWorkout(workoutId);
+
+        entityManager.clear();
+
+        assertEquals(0, workoutRepository.count());
+        assertEquals(0, workoutExerciseRepository.count());
+        assertEquals(0, exerciseSetRepository.count());
+    }
+
+    @Test
+    @DisplayName("Should return all workouts as short responses")
+    void findAll_ReturnsShortWorkoutResponses() {
+        WorkoutResponse first =
+                workoutService.createWorkout(createWorkoutRequest());
+
+        CreateWorkoutRequest secondRequest = createWorkoutRequest();
+        secondRequest.setDate(LocalDate.of(2026, 11, 2));
+        secondRequest.setNotes("Вторая тренировка");
+
+        WorkoutResponse second =
+                workoutService.createWorkout(secondRequest);
+
+        List<ShortWorkoutResponse> workouts = workoutService.findAll();
+
+        assertEquals(2, workouts.size());
+        assertEquals(first.getId(), workouts.get(0).getId());
+        assertEquals(first.getDate(), workouts.get(0).getDate());
+        assertEquals(second.getId(), workouts.get(1).getId());
+        assertEquals(second.getDate(), workouts.get(1).getDate());
+    }
+
+    @Test
+    @DisplayName("Should replace workout contents")
+    void replaceWorkout_ReplacesWorkoutGraph() {
+        WorkoutResponse createdWorkout =
+                workoutService.createWorkout(createWorkoutRequest());
+
+        CreateWorkoutRequest replacementRequest = createWorkoutRequest();
+        replacementRequest.setDate(LocalDate.of(2026, 11, 2));
+        replacementRequest.setNotes("Заменённая тренировка");
+
+        replacementRequest.getWorkoutExerciseRequestList()
+                .remove(1);
+
+        WorkoutResponse replacedWorkout =
+                workoutService.replaceWorkout(
+                        createdWorkout.getId(),
+                        replacementRequest
+                );
+
+        assertEquals(createdWorkout.getId(), replacedWorkout.getId());
+        assertEquals(LocalDate.of(2026, 11, 2), replacedWorkout.getDate());
+        assertEquals("Заменённая тренировка", replacedWorkout.getNotes());
+        assertEquals(1, replacedWorkout.getWorkoutExerciseResponseList().size());
+        assertEquals(2,
+                replacedWorkout.getWorkoutExerciseResponseList()
+                        .get(0)
+                        .getExerciseSetResponseList()
+                        .size());
+
+        assertEquals(1, workoutRepository.count());
+        assertEquals(1, workoutExerciseRepository.count());
+        assertEquals(2, exerciseSetRepository.count());
+    }
+
+    @Test
+    @DisplayName("Should throw exception when replacing nonexistent workout")
+    void replaceWorkout_WhenWorkoutDoesNotExist_ThrowsException() {
+        assertThrows(
+                WorkoutNotFoundException.class,
+                () -> workoutService.replaceWorkout(
+                        999L,
+                        createWorkoutRequest()
+                )
+        );
     }
 }

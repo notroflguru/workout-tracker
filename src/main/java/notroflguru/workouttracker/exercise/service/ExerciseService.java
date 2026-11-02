@@ -53,7 +53,7 @@ public class ExerciseService {
     public ExerciseResponse findById(Long id) {
 
         Exercise entity = repository.findById(id)
-                .orElseThrow(() -> new ExerciseNotFoundException("Exercise with id" + id + "was not found"));
+                .orElseThrow(() -> new ExerciseNotFoundException("Exercise with id" + id + "not found"));
 
         log.debug("Successfully found exercise with id: {}", id);
 

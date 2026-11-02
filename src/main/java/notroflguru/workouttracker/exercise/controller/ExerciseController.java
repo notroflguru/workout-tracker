@@ -142,7 +142,7 @@ public class ExerciseController {
                     value = """
                             {
                               "code": "EXERCISE_NOT_FOUND",
-                              "message": "Exercise not found: deadlift",
+                              "message": "Exercise not found: squat",
                               "timestamp": "2026-01-01 00:01:02"
                             }
                             """
@@ -166,7 +166,7 @@ public class ExerciseController {
                                     value = """
                             {
                               "code": "EXERCISE_NOT_FOUND",
-                              "message": "Exercise not found: deadlift",
+                              "message": "Exercise with id 5 not found",
                               "timestamp": "2026-01-01 00:01:02"
                             }
                             """
