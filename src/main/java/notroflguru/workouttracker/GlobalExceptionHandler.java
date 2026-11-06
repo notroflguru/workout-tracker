@@ -5,6 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import notroflguru.workouttracker.dto.ErrorResponse;
 import notroflguru.workouttracker.exercise.exception.ExerciseAlreadyExistsException;
 import notroflguru.workouttracker.exercise.exception.ExerciseNotFoundException;
+import notroflguru.workouttracker.user.exception.UserAlreadyExistsException;
+import notroflguru.workouttracker.user.exception.UserNotFoundException;
 import notroflguru.workouttracker.workout.exception.WorkoutNotFoundException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -117,6 +119,24 @@ public class GlobalExceptionHandler {
         log.warn("Could not find workout: {}", exception.getMessage());
 
         ErrorResponse errorResponse = new ErrorResponse("WORKOUT_NOT_FOUND", "Could not find workout", LocalDateTime.now());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+    }
+
+    @ExceptionHandler(UserAlreadyExistsException.class)
+    public ResponseEntity<ErrorResponse> handleUserAlreadyExistsException(UserAlreadyExistsException exception) {
+
+        log.warn("User already exists exception: {}", exception.getMessage());
+
+        ErrorResponse errorResponse = new ErrorResponse("USER_ALREADY_EXISTS", exception.getMessage(), LocalDateTime.now());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleUserNotFoundException(UserNotFoundException exception) {
+
+        log.warn("Could not find user: {}", exception.getMessage());
+
+        ErrorResponse errorResponse = new ErrorResponse("USER_NOT_FOUND", exception.getMessage(), LocalDateTime.now());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
     }
 }

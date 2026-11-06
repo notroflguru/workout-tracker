@@ -1,5 +1,6 @@
 HELP.md
 TODO.md
+.env
 
 target/
 .mvn/

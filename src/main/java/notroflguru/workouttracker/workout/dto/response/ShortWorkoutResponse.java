@@ -1,7 +1,10 @@
 package notroflguru.workouttracker.workout.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+
 import java.time.LocalDate;
 
+@JsonPropertyOrder({"id", "date"})
 public class ShortWorkoutResponse {
 
     private Long id;

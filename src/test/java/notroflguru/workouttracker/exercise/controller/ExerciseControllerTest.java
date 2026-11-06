@@ -6,10 +6,14 @@ import notroflguru.workouttracker.exercise.dto.Muscle;
 import notroflguru.workouttracker.exercise.exception.ExerciseAlreadyExistsException;
 import notroflguru.workouttracker.exercise.exception.ExerciseNotFoundException;
 import notroflguru.workouttracker.exercise.service.ExerciseService;
+import notroflguru.workouttracker.user.security.JwtAuthenticationFilter;
+import notroflguru.workouttracker.user.security.JwtCore;
+import notroflguru.workouttracker.user.service.UserDetailsService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
@@ -28,6 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(ExerciseController.class)
 @ActiveProfiles("test")
+@AutoConfigureMockMvc(addFilters = false)
 public class ExerciseControllerTest {
 
     @Autowired
@@ -35,6 +40,12 @@ public class ExerciseControllerTest {
 
     @MockitoBean
     private ExerciseService exerciseService;
+
+    @MockitoBean
+    private JwtCore jwtCore;
+
+    @MockitoBean
+    private UserDetailsService userDetailsService;
 
     @Test
     @DisplayName("Should successfully create a new exercise and return 201")

@@ -1,5 +1,8 @@
 package notroflguru.workouttracker.workout.controller;
 
+import notroflguru.workouttracker.user.security.JwtAuthenticationFilter;
+import notroflguru.workouttracker.user.security.JwtCore;
+import notroflguru.workouttracker.user.service.UserDetailsService;
 import notroflguru.workouttracker.workout.dto.request.CreateWorkoutRequest;
 import notroflguru.workouttracker.workout.dto.request.PatchWorkoutRequest;
 import notroflguru.workouttracker.workout.dto.response.ExerciseSetResponse;
@@ -12,6 +15,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
@@ -34,6 +38,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(WorkoutController.class)
 @ActiveProfiles("test")
+@AutoConfigureMockMvc(addFilters = false)
 public class WorkoutControllerTest {
 
     @Autowired
@@ -41,6 +46,12 @@ public class WorkoutControllerTest {
 
     @MockitoBean
     private WorkoutService workoutService;
+
+    @MockitoBean
+    private JwtCore jwtCore;
+
+    @MockitoBean
+    private UserDetailsService userDetailsService;
 
     @Test
     @DisplayName("Should successfully create a workout and return 201")
