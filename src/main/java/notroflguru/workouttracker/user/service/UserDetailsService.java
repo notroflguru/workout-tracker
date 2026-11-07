@@ -10,16 +10,21 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class UserDetailsService implements org.springframework.security.core.userdetails.UserDetailsService {
-    @Autowired
-    private UserRepository userRepository;
+
+    private final UserRepository userRepository;
+
+    public UserDetailsService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        // Ищем пользователя в БД по его username
-        User user = userRepository.findByLogin(username)
+    public UserDetails loadUserByUsername(String identifier) throws UsernameNotFoundException {
+
+        String normalizedIdentifier = identifier.toLowerCase().trim();
+
+        User user = userRepository.findByLoginOrEmail(normalizedIdentifier, normalizedIdentifier)
                 .orElseThrow(() -> new UsernameNotFoundException("Пользователь не найден"));
 
-        // Оборачиваем найденного пользователя в SecurityUser и возвращаем
         return new SecurityUser(user);
     }
 }

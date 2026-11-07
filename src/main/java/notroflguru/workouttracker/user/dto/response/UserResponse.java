@@ -1,7 +1,9 @@
 package notroflguru.workouttracker.user.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import notroflguru.workouttracker.user.model.Role;
 
+@JsonPropertyOrder({"id", "email", "login", "name", "role"})
 public class UserResponse {
 
     private Long id;

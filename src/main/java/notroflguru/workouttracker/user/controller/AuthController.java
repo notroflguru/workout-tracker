@@ -21,19 +21,16 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
     private final UserService service;
-    private final UserMapper mapper;
 
-    public AuthController(UserService userService, UserMapper userMapper) {
+    public AuthController(UserService userService) {
         this.service = userService;
-        this.mapper = userMapper;
     }
 
     @PostMapping("/register")
-    public ResponseEntity<UserResponse> registerUser(
+    public ResponseEntity<AuthResponse> registerUser(
             @Valid @RequestBody RegisterRequest request) {
 
-        User user = service.register(request);
-        UserResponse response = mapper.toResponse(user);
+        AuthResponse response = service.register(request);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -42,10 +39,7 @@ public class AuthController {
     public ResponseEntity<AuthResponse> loginUser(
             @Valid @RequestBody LoginRequest request) {
 
-        String token = service.login(request);
-        UserResponse user = mapper.toResponse(service.findByLogin(request.getLogin()));
-
-        AuthResponse response = new AuthResponse(token, user);
+        AuthResponse response = service.login(request);
 
         return ResponseEntity.ok(response);
     }

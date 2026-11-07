@@ -1,5 +1,7 @@
 package notroflguru.workouttracker.exercise.dto;
 
+import notroflguru.workouttracker.exercise.dto.request.CreateExerciseRequest;
+import notroflguru.workouttracker.exercise.dto.response.ExerciseResponse;
 import notroflguru.workouttracker.exercise.model.Exercise;
 import org.springframework.stereotype.Component;
 

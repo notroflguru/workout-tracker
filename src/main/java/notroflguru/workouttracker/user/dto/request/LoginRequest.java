@@ -5,17 +5,17 @@ import jakarta.validation.constraints.NotBlank;
 public class LoginRequest {
 
     @NotBlank
-    private String login;
+    private String identifier; // login OR email
 
     @NotBlank
     private String password;
 
-    public String getLogin() {
-        return login;
+    public String getIdentifier() {
+        return identifier;
     }
 
-    public void setLogin(String login) {
-        this.login = login;
+    public void setIdentifier(String identifier) {
+        this.identifier = identifier;
     }
 
     public String getPassword() {

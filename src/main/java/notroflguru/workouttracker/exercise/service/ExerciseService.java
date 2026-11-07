@@ -2,6 +2,8 @@ package notroflguru.workouttracker.exercise.service;
 
 import lombok.extern.slf4j.Slf4j;
 import notroflguru.workouttracker.exercise.dto.*;
+import notroflguru.workouttracker.exercise.dto.request.CreateExerciseRequest;
+import notroflguru.workouttracker.exercise.dto.response.ExerciseResponse;
 import notroflguru.workouttracker.exercise.exception.ExerciseAlreadyExistsException;
 import notroflguru.workouttracker.exercise.exception.ExerciseNotFoundException;
 import notroflguru.workouttracker.exercise.model.Exercise;

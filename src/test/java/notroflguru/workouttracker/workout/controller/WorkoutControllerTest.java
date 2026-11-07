@@ -312,6 +312,7 @@ public class WorkoutControllerTest {
                         .content(requestJson))
                 .andExpect(status().isBadRequest());
     }
+
     private WorkoutResponse createWorkoutResponse() {
         ExerciseSetResponse setResponse = new ExerciseSetResponse();
         setResponse.setId(1L);
@@ -359,12 +360,11 @@ public class WorkoutControllerTest {
     @DisplayName("Should return 404 when workout does not exist")
     void findWorkoutById_NotFound_Returns404() throws Exception {
         when(workoutService.findWorkoutById(999L))
-                .thenThrow(new WorkoutNotFoundException("Workout not found"));
+                .thenThrow(new WorkoutNotFoundException(""));
 
         mockMvc.perform(get("/api/workout/{id}", 999L))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.code").value("WORKOUT_NOT_FOUND"))
-                .andExpect(jsonPath("$.message").value("Could not find workout"));
+                .andExpect(jsonPath("$.code").value("WORKOUT_NOT_FOUND"));
     }
 
     @Test

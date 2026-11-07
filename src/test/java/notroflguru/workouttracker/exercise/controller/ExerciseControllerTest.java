@@ -1,12 +1,11 @@
 package notroflguru.workouttracker.exercise.controller;
 
-import notroflguru.workouttracker.exercise.dto.CreateExerciseRequest;
-import notroflguru.workouttracker.exercise.dto.ExerciseResponse;
+import notroflguru.workouttracker.exercise.dto.request.CreateExerciseRequest;
+import notroflguru.workouttracker.exercise.dto.response.ExerciseResponse;
 import notroflguru.workouttracker.exercise.dto.Muscle;
 import notroflguru.workouttracker.exercise.exception.ExerciseAlreadyExistsException;
 import notroflguru.workouttracker.exercise.exception.ExerciseNotFoundException;
 import notroflguru.workouttracker.exercise.service.ExerciseService;
-import notroflguru.workouttracker.user.security.JwtAuthenticationFilter;
 import notroflguru.workouttracker.user.security.JwtCore;
 import notroflguru.workouttracker.user.service.UserDetailsService;
 import org.junit.jupiter.api.DisplayName;
@@ -47,8 +46,17 @@ public class ExerciseControllerTest {
     @MockitoBean
     private UserDetailsService userDetailsService;
 
+    private ExerciseResponse mockResponse() {
+        ExerciseResponse mockResponse = new ExerciseResponse();
+        mockResponse.setId(1L);
+        mockResponse.setName("Bench press");
+        mockResponse.setDescription("Bench press with a barbell");
+        mockResponse.setMuscleList(List.of(Muscle.Chest, Muscle.Triceps, Muscle.Front_delts));
+        return mockResponse;
+    }
+
     @Test
-    @DisplayName("Should successfully create a new exercise and return 201")
+    @DisplayName("POST Успешное создание 201")
     void createExercise_Created_Returns201() throws Exception {
         String requestJson = """
                 {
@@ -58,11 +66,7 @@ public class ExerciseControllerTest {
                 }
                 """;
 
-        ExerciseResponse mockResponse = new ExerciseResponse();
-        mockResponse.setId(1L);
-        mockResponse.setName("Bench press");
-        mockResponse.setDescription("Bench press with a barbell");
-        mockResponse.setMuscleList(List.of(Muscle.Chest, Muscle.Triceps, Muscle.Front_delts));
+        ExerciseResponse mockResponse = mockResponse();
 
         Mockito.when(exerciseService.createExercise(Mockito.any(CreateExerciseRequest.class)))
                 .thenReturn(mockResponse);
@@ -82,8 +86,8 @@ public class ExerciseControllerTest {
     }
 
     @Test
-    @DisplayName("Should not create an exercise and return 400")
-    void whenInputIsInvalid_BadRequest_Returns400() throws Exception {
+    @DisplayName("POST Слишком короткое название : 400")
+    void whenNameIsTooShort_BadRequest_Returns400() throws Exception {
         String requestJson = """
                 {
                   "name" : "Ben",
@@ -92,11 +96,8 @@ public class ExerciseControllerTest {
                 }
                 """;
 
-        ExerciseResponse mockResponse = new ExerciseResponse();
-        mockResponse.setId(1L);
+        ExerciseResponse mockResponse = mockResponse();
         mockResponse.setName("Ben");
-        mockResponse.setDescription("Bench press with a barbell");
-        mockResponse.setMuscleList(List.of(Muscle.Chest, Muscle.Triceps, Muscle.Front_delts));
 
         mockMvc.perform(post("/api/exercise")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -108,7 +109,176 @@ public class ExerciseControllerTest {
     }
 
     @Test
-    @DisplayName("Should not create an exercise and return 409")
+    @DisplayName("POST Пустое название : 400")
+    void whenNameIsBlank_BadRequest_Returns400() throws Exception {
+        String requestJson = """
+                {
+                  "name" : "",
+                  "description" : "Bench press with a barbell",
+                  "muscleList" : ["Chest","Triceps", "Front_delts"]
+                }
+                """;
+
+        ExerciseResponse mockResponse = mockResponse();
+        mockResponse.setName("");
+
+
+        mockMvc.perform(post("/api/exercise")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestJson))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
+                .andExpect(jsonPath("$.message").value("Request validation failed"));
+    }
+
+    @Test
+    @DisplayName("POST Слишком длинное название : 400") // > 63 символов
+    void whenNameIsTooLong_BadRequest_Returns400() throws Exception {
+        String requestJson = """
+                {
+                  "name" : "123456123456123456123456123456123456123456123456123456123456123456",
+                  "description" : "Bench press with a barbell",
+                  "muscleList" : ["Chest","Triceps", "Front_delts"]
+                }
+                """;
+
+        ExerciseResponse mockResponse = mockResponse();
+        mockResponse.setName("123456123456123456123456123456123456123456123456123456123456123456");
+
+        mockMvc.perform(post("/api/exercise")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestJson))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
+                .andExpect(jsonPath("$.message").value("Request validation failed"));
+    }
+
+    @Test
+    @DisplayName("POST Пустое описание : 400")
+    void whenDescriptionIsEmpty_BadRequest_Returns400() throws Exception {
+        String requestJson = """
+                {
+                  "name" : "Bench press",
+                  "description" : "",
+                  "muscleList" : ["Chest","Triceps", "Front_delts"]
+                }
+                """;
+
+        ExerciseResponse mockResponse = mockResponse();
+        mockResponse.setDescription("");
+
+        mockMvc.perform(post("/api/exercise")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestJson))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
+                .andExpect(jsonPath("$.message").value("Request validation failed"));
+    }
+
+    @Test
+    @DisplayName("POST Слишком короткое описание : 400")
+    void whenDescriptionIsTooShort_BadRequest_Returns400() throws Exception {
+        String requestJson = """
+                {
+                  "name" : "Bench press",
+                  "description" : "Ben",
+                  "muscleList" : ["Chest","Triceps", "Front_delts"]
+                }
+                """;
+
+        ExerciseResponse mockResponse = mockResponse();
+        mockResponse.setDescription("Ben");
+
+        mockMvc.perform(post("/api/exercise")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestJson))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
+                .andExpect(jsonPath("$.message").value("Request validation failed"));
+    }
+
+    @Test
+    @DisplayName("POST Слишком длинное описание : 400") // >255 символов
+    void whenDescriptionIsTooLong_BadRequest_Returns400() throws Exception {
+        String requestJson = """
+                {
+                  "name" : "Bench press",
+                  "description" : "Слишком длинное описаниеСлишком длинное описаниеСлишком длинное описаниеСлишком длинное описаниеСлишком длинное описаниеСлишком длинное описаниеСлишком длинное описаниеСлишком длинное описаниеСлишком длинное описаниеСлишком длинное описаниеСлишком длинное описание",
+                  "muscleList" : ["Chest","Triceps", "Front_delts"]
+                }
+                """;
+
+        ExerciseResponse mockResponse = mockResponse();
+        mockResponse.setDescription("Слишком длинное описаниеСлишком длинное описаниеСлишком длинное описаниеСлишком длинное описаниеСлишком длинное описание" +
+                "Слишком длинное описаниеСлишком длинное описаниеСлишком длинное описаниеСлишком длинное описаниеСлишком длинное описаниеСлишком длинное описание");
+
+        mockMvc.perform(post("/api/exercise")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestJson))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
+                .andExpect(jsonPath("$.message").value("Request validation failed"));
+    }
+
+    @Test
+    @DisplayName("POST Пустой список мышц : 400")
+    void whenMuscleListIsEmpty_BadRequest_Returns400() throws Exception {
+        String requestJson = """
+                {
+                  "name" : "Bench press",
+                  "description" : "Bench press with a barbell",
+                  "muscleList" : []
+                }
+                """;
+
+        ExerciseResponse mockResponse = mockResponse();
+        mockResponse.setMuscleList(List.of());
+
+        Mockito.when(exerciseService.createExercise(Mockito.any(CreateExerciseRequest.class)))
+                .thenReturn(mockResponse);
+
+        mockMvc.perform(post("/api/exercise")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestJson))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
+                .andExpect(jsonPath("$.message").value("Request validation failed"));
+    }
+
+    @Test
+    @DisplayName("POST Слишком большой список мышц : 400")
+    void whenMuscleListIsTooBig_BadRequest_Returns400() throws Exception {
+        String requestJson = """
+                {
+                  "name" : "Bench press",
+                  "description" : "Bench press with a barbell",
+                  "muscleList" : ["Chest","Triceps", "Front_delts", "Biceps", "Glutes", "Abs"]
+                }
+                """;
+
+        ExerciseResponse mockResponse = mockResponse();
+        mockResponse.setMuscleList(List.of(Muscle.Chest, Muscle.Triceps, Muscle.Front_delts, Muscle.Biceps, Muscle.Glutes, Muscle.Abs));
+
+        Mockito.when(exerciseService.createExercise(Mockito.any(CreateExerciseRequest.class)))
+                .thenReturn(mockResponse);
+
+        mockMvc.perform(post("/api/exercise")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestJson))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
+                .andExpect(jsonPath("$.message").value("Request validation failed"));
+    }
+
+    @Test
+    @DisplayName("POST Уже существующее 409")
     void whenExerciseAlreadyExists_Conflict_Returns409() throws Exception {
         String requestJson = """
                 {
@@ -132,16 +302,12 @@ public class ExerciseControllerTest {
     }
 
     @Test
-    @DisplayName("Should return exercise by name and HTTP 200")
-    void whenExerciseExists_Returns200() throws Exception {
+    @DisplayName("GET Успешный поиск по name : 200")
+    void whenExerciseExistsByName_Returns200() throws Exception {
 
         String exerciseName = "Bench press";
 
-        ExerciseResponse mockResponse = new ExerciseResponse();
-        mockResponse.setId(1L);
-        mockResponse.setName("Bench press");
-        mockResponse.setDescription("Bench press with a barbell");
-        mockResponse.setMuscleList(List.of(Muscle.Chest, Muscle.Triceps, Muscle.Front_delts));
+        ExerciseResponse mockResponse = mockResponse();
 
         Mockito.when(exerciseService.findByName(eq(exerciseName)))
                 .thenReturn(mockResponse);
@@ -159,7 +325,43 @@ public class ExerciseControllerTest {
     }
 
     @Test
-    @DisplayName("Should not find exercise by name and return 404")
+    @DisplayName("GET Успешный поиск по id : 200")
+    void whenExerciseExistsById_Returns200() throws Exception {
+
+        Long exerciseId = 1L;
+
+        ExerciseResponse mockResponse = mockResponse();
+
+        Mockito.when(exerciseService.findById(eq(exerciseId)))
+                .thenReturn(mockResponse);
+
+        mockMvc.perform(get("/api/exercise/{id}", exerciseId)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1L))
+                .andExpect(jsonPath("$.name").value("Bench press"))
+                .andExpect(jsonPath("$.description").value("Bench press with a barbell"))
+                .andExpect(jsonPath("$.muscleList[0]").value("Chest"))
+                .andExpect(jsonPath("$.muscleList[1]").value("Triceps"))
+                .andExpect(jsonPath("$.muscleList[2]").value("Front_delts"));
+    }
+
+    @Test
+    @DisplayName("GET Неуспешный поиск по неверному id : 404")
+    void whenExerciseIdIsWrong_BadRequest_Returns400() throws Exception {
+
+        String nonExistingId = "ABCD";
+
+        mockMvc.perform(get("/api/exercise/{id}", nonExistingId))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("WRONG_ID"))
+                .andExpect(jsonPath("$.message").value("Could not resolve id"));
+    }
+
+    @Test
+    @DisplayName("GET Неуспешный поиск по name : 404")
     void whenExerciseDoesNotExistByName_NotFound_Returns404() throws Exception {
 
         String nonExistingName = "Unknown_Exercise";
@@ -175,7 +377,7 @@ public class ExerciseControllerTest {
     }
 
     @Test
-    @DisplayName("Should not find exercise by id and return 404")
+    @DisplayName("GET Неуспешный поиск по id : 404")
     void whenExerciseDoesNotExistById_NotFound_Returns404() throws Exception {
 
         Long nonExistingId = 999L;

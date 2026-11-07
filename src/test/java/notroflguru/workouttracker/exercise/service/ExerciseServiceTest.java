@@ -1,7 +1,7 @@
 package notroflguru.workouttracker.exercise.service;
 
-import notroflguru.workouttracker.exercise.dto.CreateExerciseRequest;
-import notroflguru.workouttracker.exercise.dto.ExerciseResponse;
+import notroflguru.workouttracker.exercise.dto.request.CreateExerciseRequest;
+import notroflguru.workouttracker.exercise.dto.response.ExerciseResponse;
 import notroflguru.workouttracker.exercise.dto.Muscle;
 import notroflguru.workouttracker.exercise.exception.ExerciseAlreadyExistsException;
 import notroflguru.workouttracker.exercise.exception.ExerciseNotFoundException;

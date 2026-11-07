@@ -1,7 +1,8 @@
-package notroflguru.workouttracker.exercise.dto;
+package notroflguru.workouttracker.exercise.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.v3.oas.annotations.media.Schema;
+import notroflguru.workouttracker.exercise.dto.Muscle;
 
 import java.util.List;
 

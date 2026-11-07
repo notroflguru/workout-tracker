@@ -12,10 +12,13 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -24,6 +27,15 @@ import java.util.Map;
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ErrorResponse> handleNoResourceFoundException(NoResourceFoundException exception) {
+
+        log.warn("Unknown api path: {}", exception.getMessage());
+
+        ErrorResponse errorResponse = new ErrorResponse("RESOURCE_NOT_FOUND", exception.getMessage(), LocalDateTime.now());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+    }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException exception) {
@@ -118,7 +130,7 @@ public class GlobalExceptionHandler {
 
         log.warn("Could not find workout: {}", exception.getMessage());
 
-        ErrorResponse errorResponse = new ErrorResponse("WORKOUT_NOT_FOUND", "Could not find workout", LocalDateTime.now());
+        ErrorResponse errorResponse = new ErrorResponse("WORKOUT_NOT_FOUND", exception.getMessage(), LocalDateTime.now());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
     }
 
@@ -134,7 +146,25 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleUserNotFoundException(UserNotFoundException exception) {
 
-        log.warn("Could not find user: {}", exception.getMessage());
+        log.warn("Could not find user (UserNotFoundException): {}", exception.getMessage());
+
+        ErrorResponse errorResponse = new ErrorResponse("USER_NOT_FOUND", exception.getMessage(), LocalDateTime.now());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<ErrorResponse> handleBadCredentialsException(BadCredentialsException exception) {
+
+        log.warn("Bad credentials exception: {}", exception.getMessage());
+
+        ErrorResponse errorResponse = new ErrorResponse("AUTHENTICATION_FAILED", "Неверный логин или пароль", LocalDateTime.now());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+    }
+
+    @ExceptionHandler(UsernameNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleUsernameNotFoundException(UsernameNotFoundException exception) {
+
+        log.warn("Could not find user (UsernameNotFoundException): {}", exception.getMessage());
 
         ErrorResponse errorResponse = new ErrorResponse("USER_NOT_FOUND", exception.getMessage(), LocalDateTime.now());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);

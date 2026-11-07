@@ -3,6 +3,7 @@ package notroflguru.workouttracker.config;
 import notroflguru.workouttracker.user.security.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -34,10 +35,12 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll() // Эндпоинты для логина и регистрации доступны всем
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN") // Админские эндпоинты только админам
                         .requestMatchers(
-                                "/swagger-ui/**", "/v3/api-docs/**", "/api/docs/**").permitAll() // Эндпоинты с API документацией доступны всем
-                        .requestMatchers("/api/workout/**", "/api/exercise/**").permitAll() // УБРАТЬ ПЕРЕД ПРОДОМ, maybe сделать доступными GET с rate limiting
+                                "/api/swagger-ui/**", "/v3/api-docs/**", "/api/docs/**").permitAll() // Эндпоинты с API документацией доступны всем
+                        .requestMatchers(HttpMethod.GET, "/api/exercise/**").permitAll() // GET /api/exercise можно всем желающим
+                        .requestMatchers("/api/workout/**").hasAnyRole("ADMIN", "USER") // /api/workout можно только авторизованным
+                        .requestMatchers(HttpMethod.POST, "/api/exercise/**").hasAnyRole("ADMIN", "USER") // POST /api/exercise можно только авторизованным
                         .anyRequest().authenticated()
                 )
                 // Добавляем JWT фильтр перед стандартным фильтром аутентификации
