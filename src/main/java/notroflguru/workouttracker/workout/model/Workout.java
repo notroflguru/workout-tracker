@@ -1,6 +1,7 @@
 package notroflguru.workouttracker.workout.model;
 
 import jakarta.persistence.*;
+import notroflguru.workouttracker.user.model.User;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -25,6 +26,10 @@ public class Workout {
     // orphanRemoval = true удаляет дочерний объект тогда, когда его отвязывают от родительского
     @OrderBy("orderNumber ASC")
     private List<WorkoutExercise> workoutExerciseList = new ArrayList<>();
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     public Long getId() {
         return id;
@@ -59,4 +64,11 @@ public class Workout {
         workoutExerciseList.clear();
     }
 
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
 }

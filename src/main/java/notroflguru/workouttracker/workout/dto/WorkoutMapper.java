@@ -18,15 +18,6 @@ import java.util.List;
 @Component
 public class WorkoutMapper {
 
-    public Workout toEntity(CreateWorkoutRequest request) {
-        Workout entity = new Workout();
-
-        entity.setDate(request.getDate());
-        entity.setNotes(request.getNotes());
-
-        return entity;
-    }
-
     public WorkoutExercise toEntity(CreateWorkoutExerciseRequest request, Exercise exercise) {
         WorkoutExercise entity = new WorkoutExercise();
 

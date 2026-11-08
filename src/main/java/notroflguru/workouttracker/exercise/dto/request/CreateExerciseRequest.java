@@ -1,7 +1,7 @@
 package notroflguru.workouttracker.exercise.dto.request;
 
 import jakarta.validation.constraints.*;
-import notroflguru.workouttracker.exercise.dto.Muscle;
+import notroflguru.workouttracker.exercise.model.Muscle;
 
 import java.util.List;
 

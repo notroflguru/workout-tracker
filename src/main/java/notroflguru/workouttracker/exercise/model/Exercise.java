@@ -1,7 +1,6 @@
 package notroflguru.workouttracker.exercise.model;
 
 import jakarta.persistence.*;
-import notroflguru.workouttracker.exercise.dto.Muscle;
 
 import java.util.List;
 

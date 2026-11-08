@@ -5,9 +5,12 @@ import lombok.extern.slf4j.Slf4j;
 import notroflguru.workouttracker.exercise.exception.ExerciseNotFoundException;
 import notroflguru.workouttracker.exercise.model.Exercise;
 import notroflguru.workouttracker.exercise.repository.ExerciseRepository;
+import notroflguru.workouttracker.user.exception.UserNotFoundException;
+import notroflguru.workouttracker.user.model.User;
+import notroflguru.workouttracker.user.repository.UserRepository;
+import notroflguru.workouttracker.workout.dto.WorkoutMapper;
 import notroflguru.workouttracker.workout.dto.request.CreateWorkoutExerciseRequest;
 import notroflguru.workouttracker.workout.dto.request.CreateWorkoutRequest;
-import notroflguru.workouttracker.workout.dto.WorkoutMapper;
 import notroflguru.workouttracker.workout.dto.request.PatchWorkoutRequest;
 import notroflguru.workouttracker.workout.dto.response.ShortWorkoutResponse;
 import notroflguru.workouttracker.workout.dto.response.WorkoutResponse;
@@ -29,24 +32,16 @@ public class WorkoutService {
     private final WorkoutMapper mapper;
     private final WorkoutRepository workoutRepository;
     private final ExerciseRepository exerciseRepository;
+    private final UserRepository userRepository;
 
-    public WorkoutService(WorkoutMapper workoutMapper, WorkoutRepository workoutRepository, ExerciseRepository exerciseRepository) {
+    public WorkoutService(WorkoutMapper workoutMapper, WorkoutRepository workoutRepository, ExerciseRepository exerciseRepository, UserRepository userRepository) {
         this.mapper = workoutMapper;
         this.workoutRepository = workoutRepository;
         this.exerciseRepository = exerciseRepository;
+        this.userRepository = userRepository;
     }
 
-    private Workout findById(Long id) {
-        return workoutRepository.findWithExercisesById(id)
-                .orElseThrow(() -> new WorkoutNotFoundException("Workout not found"));
-    }
-
-    @Transactional
-    public WorkoutResponse createWorkout(CreateWorkoutRequest request) {
-        return saveWorkout(new Workout(), request);
-    }
-
-    private WorkoutResponse saveWorkout(
+    private void applyRequest(
             Workout workout,
             CreateWorkoutRequest request
     ) {
@@ -57,18 +52,28 @@ public class WorkoutService {
         Map<Long, Exercise> exercisesById = loadExercises(request);
 
         request.getWorkoutExerciseRequestList().forEach(workoutExerciseRequest -> {
-            WorkoutExercise workoutExercise = buildWorkoutExercise(
-                    workoutExerciseRequest,
-                    exercisesById
-            );
+            WorkoutExercise workoutExercise =
+                    buildWorkoutExercise(workoutExerciseRequest, exercisesById);
 
             workout.addWorkoutExercise(workoutExercise);
         });
+    }
+
+    private Workout findById(Long id, Long userId) {
+        return workoutRepository.findWithExercisesByIdAndUser_Id(id, userId)
+                .orElseThrow(() -> new WorkoutNotFoundException("Workout not found"));
+    }
+
+    public WorkoutResponse createWorkout(CreateWorkoutRequest request, Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        Workout workout = new Workout();
+        workout.setUser(user);
+
+        applyRequest(workout, request);
 
         Workout savedWorkout = workoutRepository.save(workout);
-
-        log.info("Successfully saved workout with ID: {}", savedWorkout.getId());
-
         return mapper.toResponse(savedWorkout);
     }
 
@@ -111,21 +116,22 @@ public class WorkoutService {
     }
 
     @Transactional
-    public WorkoutResponse findWorkoutById(Long id) {
+    public WorkoutResponse findWorkoutById(Long id, Long userId) {
 
-        Workout entity = findById(id);
+        Workout workout = findById(id, userId);
 
         log.debug("Successfully found workout with ID: {}", id);
 
-        return mapper.toResponse(entity);
+        return mapper.toResponse(workout);
     }
 
     @Transactional // Нужно для автоматического обновления данных в базе данных при изменении значений полей сущности
     public WorkoutResponse updateWorkout(
             Long id,
-            PatchWorkoutRequest request
+            PatchWorkoutRequest request,
+            Long userId
     ) {
-        Workout workout = findById(id);
+        Workout workout = findById(id, userId);
 
         if (request.getDate() != null) {
             workout.setDate(request.getDate());
@@ -144,25 +150,34 @@ public class WorkoutService {
         return mapper.toResponse(workout);
     }
 
-    public void deleteWorkout(Long id) {
-        findById(id);
+    @Transactional
+    public void deleteWorkout(Long id, Long userId) {
+
+        if (!workoutRepository.existsByIdAndUser_Id(id, userId)) {
+            throw new WorkoutNotFoundException("Workout not found");
+        }
 
         log.info("Successfully delete workout with ID: {}", id);
 
-        workoutRepository.deleteById(id);
+        workoutRepository.deleteByIdAndUser_Id(id, userId);
     }
 
-    public List<ShortWorkoutResponse> findAll() {
-        return mapper.toShortResponseList(workoutRepository.findAll());
+    public List<ShortWorkoutResponse> findAll(Long userId) {
+        List<Workout> workoutList = workoutRepository.findAllByUser_Id(userId);
+
+        return mapper.toShortResponseList(workoutList);
     }
 
     @Transactional
     public WorkoutResponse replaceWorkout(
             Long id,
-            CreateWorkoutRequest request
+            CreateWorkoutRequest request,
+            Long userId
     ) {
-        Workout workout = findById(id);
+        Workout workout = findById(id, userId);
 
-        return saveWorkout(workout, request);
+        applyRequest(workout, request);
+
+        return mapper.toResponse(workout);
     }
 }

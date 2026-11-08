@@ -2,7 +2,7 @@ package notroflguru.workouttracker.exercise.controller;
 
 import notroflguru.workouttracker.exercise.dto.request.CreateExerciseRequest;
 import notroflguru.workouttracker.exercise.dto.response.ExerciseResponse;
-import notroflguru.workouttracker.exercise.dto.Muscle;
+import notroflguru.workouttracker.exercise.model.Muscle;
 import notroflguru.workouttracker.exercise.exception.ExerciseAlreadyExistsException;
 import notroflguru.workouttracker.exercise.exception.ExerciseNotFoundException;
 import notroflguru.workouttracker.exercise.service.ExerciseService;
@@ -51,7 +51,7 @@ public class ExerciseControllerTest {
         mockResponse.setId(1L);
         mockResponse.setName("Bench press");
         mockResponse.setDescription("Bench press with a barbell");
-        mockResponse.setMuscleList(List.of(Muscle.Chest, Muscle.Triceps, Muscle.Front_delts));
+        mockResponse.setMuscleList(List.of(Muscle.CHEST, Muscle.TRICEPS, Muscle.FRONT_DELTS));
         return mockResponse;
     }
 
@@ -62,7 +62,7 @@ public class ExerciseControllerTest {
                 {
                   "name" : "Bench press",
                   "description" : "Bench press with a barbell",
-                  "muscleList" : ["Chest","Triceps", "Front_delts"]
+                  "muscleList" : ["CHEST","TRICEPS", "FRONT_DELTS"]
                 }
                 """;
 
@@ -80,9 +80,9 @@ public class ExerciseControllerTest {
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.name").value("Bench press"))
                 .andExpect(jsonPath("$.description").value("Bench press with a barbell"))
-                .andExpect(jsonPath("$.muscleList[0]").value("Chest"))
-                .andExpect(jsonPath("$.muscleList[1]").value("Triceps"))
-                .andExpect(jsonPath("$.muscleList[2]").value("Front_delts"));
+                .andExpect(jsonPath("$.muscleList[0]").value("CHEST"))
+                .andExpect(jsonPath("$.muscleList[1]").value("TRICEPS"))
+                .andExpect(jsonPath("$.muscleList[2]").value("FRONT_DELTS"));
     }
 
     @Test
@@ -92,7 +92,7 @@ public class ExerciseControllerTest {
                 {
                   "name" : "Ben",
                   "description" : "Bench press with a barbell",
-                  "muscleList" : ["Chest","Triceps", "Front_delts"]
+                  "muscleList" : ["CHEST","TRICEPS", "FRONT_DELTS"]
                 }
                 """;
 
@@ -115,7 +115,7 @@ public class ExerciseControllerTest {
                 {
                   "name" : "",
                   "description" : "Bench press with a barbell",
-                  "muscleList" : ["Chest","Triceps", "Front_delts"]
+                  "muscleList" : ["CHEST","TRICEPS", "FRONT_DELTS"]
                 }
                 """;
 
@@ -139,7 +139,7 @@ public class ExerciseControllerTest {
                 {
                   "name" : "123456123456123456123456123456123456123456123456123456123456123456",
                   "description" : "Bench press with a barbell",
-                  "muscleList" : ["Chest","Triceps", "Front_delts"]
+                  "muscleList" : ["CHEST","TRICEPS", "FRONT_DELTS"]
                 }
                 """;
 
@@ -162,7 +162,7 @@ public class ExerciseControllerTest {
                 {
                   "name" : "Bench press",
                   "description" : "",
-                  "muscleList" : ["Chest","Triceps", "Front_delts"]
+                  "muscleList" : ["CHEST","TRICEPS", "FRONT_DELTS"]
                 }
                 """;
 
@@ -185,7 +185,7 @@ public class ExerciseControllerTest {
                 {
                   "name" : "Bench press",
                   "description" : "Ben",
-                  "muscleList" : ["Chest","Triceps", "Front_delts"]
+                  "muscleList" : ["CHEST","TRICEPS", "FRONT_DELTS"]
                 }
                 """;
 
@@ -208,7 +208,7 @@ public class ExerciseControllerTest {
                 {
                   "name" : "Bench press",
                   "description" : "Слишком длинное описаниеСлишком длинное описаниеСлишком длинное описаниеСлишком длинное описаниеСлишком длинное описаниеСлишком длинное описаниеСлишком длинное описаниеСлишком длинное описаниеСлишком длинное описаниеСлишком длинное описаниеСлишком длинное описание",
-                  "muscleList" : ["Chest","Triceps", "Front_delts"]
+                  "muscleList" : ["CHEST","TRICEPS", "FRONT_DELTS"]
                 }
                 """;
 
@@ -258,12 +258,12 @@ public class ExerciseControllerTest {
                 {
                   "name" : "Bench press",
                   "description" : "Bench press with a barbell",
-                  "muscleList" : ["Chest","Triceps", "Front_delts", "Biceps", "Glutes", "Abs"]
+                  "muscleList" : ["CHEST","TRICEPS", "FRONT_DELTS", "BICEPS", "GLUTES", "ABS"]
                 }
                 """;
 
         ExerciseResponse mockResponse = mockResponse();
-        mockResponse.setMuscleList(List.of(Muscle.Chest, Muscle.Triceps, Muscle.Front_delts, Muscle.Biceps, Muscle.Glutes, Muscle.Abs));
+        mockResponse.setMuscleList(List.of(Muscle.CHEST, Muscle.TRICEPS, Muscle.FRONT_DELTS, Muscle.BICEPS, Muscle.GLUTES, Muscle.ABS));
 
         Mockito.when(exerciseService.createExercise(Mockito.any(CreateExerciseRequest.class)))
                 .thenReturn(mockResponse);
@@ -284,7 +284,7 @@ public class ExerciseControllerTest {
                 {
                   "name" : "Bench press",
                   "description" : "Bench press with a barbell",
-                  "muscleList" : ["Chest","Triceps", "Front_delts"]
+                  "muscleList" : ["CHEST","TRICEPS", "FRONT_DELTS"]
                 }
                 """;
 
@@ -319,9 +319,9 @@ public class ExerciseControllerTest {
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.name").value("Bench press"))
                 .andExpect(jsonPath("$.description").value("Bench press with a barbell"))
-                .andExpect(jsonPath("$.muscleList[0]").value("Chest"))
-                .andExpect(jsonPath("$.muscleList[1]").value("Triceps"))
-                .andExpect(jsonPath("$.muscleList[2]").value("Front_delts"));
+                .andExpect(jsonPath("$.muscleList[0]").value("CHEST"))
+                .andExpect(jsonPath("$.muscleList[1]").value("TRICEPS"))
+                .andExpect(jsonPath("$.muscleList[2]").value("FRONT_DELTS"));
     }
 
     @Test
@@ -342,9 +342,9 @@ public class ExerciseControllerTest {
                 .andExpect(jsonPath("$.id").value(1L))
                 .andExpect(jsonPath("$.name").value("Bench press"))
                 .andExpect(jsonPath("$.description").value("Bench press with a barbell"))
-                .andExpect(jsonPath("$.muscleList[0]").value("Chest"))
-                .andExpect(jsonPath("$.muscleList[1]").value("Triceps"))
-                .andExpect(jsonPath("$.muscleList[2]").value("Front_delts"));
+                .andExpect(jsonPath("$.muscleList[0]").value("CHEST"))
+                .andExpect(jsonPath("$.muscleList[1]").value("TRICEPS"))
+                .andExpect(jsonPath("$.muscleList[2]").value("FRONT_DELTS"));
     }
 
     @Test

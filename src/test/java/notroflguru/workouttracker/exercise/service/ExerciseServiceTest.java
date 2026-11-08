@@ -2,7 +2,7 @@ package notroflguru.workouttracker.exercise.service;
 
 import notroflguru.workouttracker.exercise.dto.request.CreateExerciseRequest;
 import notroflguru.workouttracker.exercise.dto.response.ExerciseResponse;
-import notroflguru.workouttracker.exercise.dto.Muscle;
+import notroflguru.workouttracker.exercise.model.Muscle;
 import notroflguru.workouttracker.exercise.exception.ExerciseAlreadyExistsException;
 import notroflguru.workouttracker.exercise.exception.ExerciseNotFoundException;
 import notroflguru.workouttracker.exercise.repository.ExerciseRepository;
@@ -64,7 +64,7 @@ class ExerciseServiceTest {
 
         assertEquals("Bench press", response.getName());
         assertEquals("Bench press with a barbell", response.getDescription());
-        assertEquals(List.of(Muscle.Chest, Muscle.Triceps), response.getMuscleList());
+        assertEquals(List.of(Muscle.CHEST, Muscle.TRICEPS), response.getMuscleList());
     }
 
     // Успешный поиск упражнения по имени игнорируя регистр
@@ -117,7 +117,7 @@ class ExerciseServiceTest {
         CreateExerciseRequest request = new CreateExerciseRequest();
         request.setName(name);
         request.setDescription("Bench press with a barbell");
-        request.setMuscleList(List.of(Muscle.Chest, Muscle.Triceps));
+        request.setMuscleList(List.of(Muscle.CHEST, Muscle.TRICEPS));
         return request;
     }
 }

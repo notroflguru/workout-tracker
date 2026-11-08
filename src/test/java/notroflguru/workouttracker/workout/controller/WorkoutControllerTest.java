@@ -1,7 +1,9 @@
 package notroflguru.workouttracker.workout.controller;
 
+import notroflguru.workouttracker.user.model.Role;
+import notroflguru.workouttracker.user.model.User;
 import notroflguru.workouttracker.user.security.JwtAuthenticationFilter;
-import notroflguru.workouttracker.user.security.JwtCore;
+import notroflguru.workouttracker.user.security.SecurityUser;
 import notroflguru.workouttracker.user.service.UserDetailsService;
 import notroflguru.workouttracker.workout.dto.request.CreateWorkoutRequest;
 import notroflguru.workouttracker.workout.dto.request.PatchWorkoutRequest;
@@ -9,19 +11,33 @@ import notroflguru.workouttracker.workout.dto.response.ExerciseSetResponse;
 import notroflguru.workouttracker.workout.dto.response.ShortWorkoutResponse;
 import notroflguru.workouttracker.workout.dto.response.WorkoutExerciseResponse;
 import notroflguru.workouttracker.workout.dto.response.WorkoutResponse;
-import notroflguru.workouttracker.workout.service.WorkoutService;
 import notroflguru.workouttracker.workout.exception.WorkoutNotFoundException;
+import notroflguru.workouttracker.workout.service.WorkoutService;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
+import org.springframework.core.MethodParameter;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-
+import org.springframework.web.bind.support.WebDataBinderFactory;
+import org.springframework.web.context.request.NativeWebRequest;
+import org.springframework.web.method.support.HandlerMethodArgumentResolver;
+import org.springframework.web.method.support.ModelAndViewContainer;
+import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
+import org.springframework.beans.factory.config.BeanPostProcessor;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -30,15 +46,16 @@ import java.util.List;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.testSecurityContext;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(WorkoutController.class)
 @ActiveProfiles("test")
 @AutoConfigureMockMvc(addFilters = false)
+@Import(WorkoutControllerTest.MvcTestConfig.class)
 public class WorkoutControllerTest {
 
     @Autowired
@@ -48,10 +65,84 @@ public class WorkoutControllerTest {
     private WorkoutService workoutService;
 
     @MockitoBean
-    private JwtCore jwtCore;
+    private JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @MockitoBean
     private UserDetailsService userDetailsService;
+
+
+
+    private User testUser;
+    private SecurityUser securityUser;
+    private UsernamePasswordAuthenticationToken authentication;
+
+    @BeforeEach
+    void setUp() {
+        testUser = new User();
+        testUser.setId(1L);
+        testUser.setEmail("test@example.com");
+        testUser.setLogin("test-user");
+        testUser.setRole(Role.USER);
+
+        securityUser = new SecurityUser(testUser);
+
+        authentication = new UsernamePasswordAuthenticationToken(
+                securityUser,
+                null,
+                securityUser.getAuthorities()
+        );
+    }
+
+    @AfterEach
+    void tearDown() {
+        SecurityContextHolder.clearContext();
+    }
+
+    @TestConfiguration
+    static class MvcTestConfig {
+
+        @Bean
+        static BeanPostProcessor authenticationPrincipalResolver() {
+            return new BeanPostProcessor() {
+                @Override
+                public Object postProcessAfterInitialization(Object bean, String beanName) {
+                    if (bean instanceof RequestMappingHandlerAdapter adapter) {
+                        List<HandlerMethodArgumentResolver> resolvers =
+                                new java.util.ArrayList<>();
+                        resolvers.add(new TestAuthenticationPrincipalResolver());
+                        resolvers.addAll(adapter.getArgumentResolvers());
+                        adapter.setArgumentResolvers(resolvers);
+                    }
+                    return bean;
+                }
+            };
+        }
+    }
+
+    private static class TestAuthenticationPrincipalResolver
+            implements HandlerMethodArgumentResolver {
+
+        @Override
+        public boolean supportsParameter(MethodParameter parameter) {
+            return parameter.hasParameterAnnotation(AuthenticationPrincipal.class)
+                    && SecurityUser.class.isAssignableFrom(parameter.getParameterType());
+        }
+
+        @Override
+        public Object resolveArgument(
+                MethodParameter parameter,
+                ModelAndViewContainer mavContainer,
+                NativeWebRequest webRequest,
+                WebDataBinderFactory binderFactory
+        ) {
+            User user = new User();
+            user.setId(1L);
+            user.setEmail("test@example.com");
+            user.setLogin("test-user");
+            user.setRole(Role.USER);
+            return new SecurityUser(user);
+        }
+    }
 
     @Test
     @DisplayName("Should successfully create a workout and return 201")
@@ -97,10 +188,11 @@ public class WorkoutControllerTest {
         mockResponse.setNotes("Тестовая тренировка");
         mockResponse.setWorkoutExerciseResponseList(List.of(exerciseResponse));
 
-        when(workoutService.createWorkout(Mockito.any()))
+        when(workoutService.createWorkout(any(CreateWorkoutRequest.class), anyLong()))
                 .thenReturn(mockResponse);
 
         mockMvc.perform(post("/api/workout")
+                        .with(authentication(authentication))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content(requestJson))
@@ -129,6 +221,7 @@ public class WorkoutControllerTest {
             """;
 
         mockMvc.perform(post("/api/workout")
+                        .with(authentication(authentication))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
                 .andDo(print())
@@ -147,6 +240,7 @@ public class WorkoutControllerTest {
             """;
 
         mockMvc.perform(post("/api/workout")
+                        .with(authentication(authentication))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
                 .andDo(print())
@@ -170,6 +264,7 @@ public class WorkoutControllerTest {
             """;
 
         mockMvc.perform(post("/api/workout")
+                        .with(authentication(authentication))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
                 .andExpect(status().isBadRequest());
@@ -192,6 +287,7 @@ public class WorkoutControllerTest {
             """;
 
         mockMvc.perform(post("/api/workout")
+                        .with(authentication(authentication))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
                 .andExpect(status().isBadRequest());
@@ -221,6 +317,7 @@ public class WorkoutControllerTest {
             """;
 
         mockMvc.perform(post("/api/workout")
+                        .with(authentication(authentication))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
                 .andExpect(status().isBadRequest());
@@ -250,6 +347,7 @@ public class WorkoutControllerTest {
             """;
 
         mockMvc.perform(post("/api/workout")
+                        .with(authentication(authentication))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
                 .andExpect(status().isBadRequest());
@@ -279,6 +377,7 @@ public class WorkoutControllerTest {
             """;
 
         mockMvc.perform(post("/api/workout")
+                        .with(authentication(authentication))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
                 .andExpect(status().isBadRequest());
@@ -308,6 +407,7 @@ public class WorkoutControllerTest {
             """;
 
         mockMvc.perform(post("/api/workout")
+                        .with(authentication(authentication))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
                 .andExpect(status().isBadRequest());
@@ -342,10 +442,11 @@ public class WorkoutControllerTest {
     void findWorkoutById_Returns200() throws Exception {
         WorkoutResponse response = createWorkoutResponse();
 
-        when(workoutService.findWorkoutById(1L))
+        when(workoutService.findWorkoutById(1L, 1L))
                 .thenReturn(response);
 
         mockMvc.perform(get("/api/workout/{id}", 1L)
+                        .with(authentication(authentication))
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -359,10 +460,11 @@ public class WorkoutControllerTest {
     @Test
     @DisplayName("Should return 404 when workout does not exist")
     void findWorkoutById_NotFound_Returns404() throws Exception {
-        when(workoutService.findWorkoutById(999L))
+        when(workoutService.findWorkoutById(999L, 1L))
                 .thenThrow(new WorkoutNotFoundException(""));
 
-        mockMvc.perform(get("/api/workout/{id}", 999L))
+        mockMvc.perform(get("/api/workout/{id}", 999L)
+                        .with(authentication(authentication)))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code").value("WORKOUT_NOT_FOUND"));
     }
@@ -370,7 +472,8 @@ public class WorkoutControllerTest {
     @Test
     @DisplayName("Should return 400 when workout ID is invalid")
     void findWorkoutById_InvalidId_Returns400() throws Exception {
-        mockMvc.perform(get("/api/workout/{id}", "abc"))
+        mockMvc.perform(get("/api/workout/{id}", "abc")
+                        .with(authentication(authentication)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("WRONG_ID"));
     }
@@ -391,10 +494,12 @@ public class WorkoutControllerTest {
 
         when(workoutService.updateWorkout(
                 anyLong(),
-                any(notroflguru.workouttracker.workout.dto.request.PatchWorkoutRequest.class)
+                any(notroflguru.workouttracker.workout.dto.request.PatchWorkoutRequest.class),
+                anyLong()
         )).thenReturn(response);
 
         mockMvc.perform(patch("/api/workout/{id}", 1L)
+                        .with(authentication(authentication))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content(requestJson))
@@ -406,7 +511,8 @@ public class WorkoutControllerTest {
 
         verify(workoutService).updateWorkout(
                 eq(1L),
-                any(PatchWorkoutRequest.class)
+                any(PatchWorkoutRequest.class),
+                eq(1L)
         );
     }
 
@@ -417,10 +523,12 @@ public class WorkoutControllerTest {
 
         when(workoutService.updateWorkout(
                 eq(1L),
-                any(PatchWorkoutRequest.class)
+                any(PatchWorkoutRequest.class),
+                eq(1L)
         )).thenReturn(response);
 
         mockMvc.perform(patch("/api/workout/{id}", 1L)
+                        .with(authentication(authentication))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content("{}"))
@@ -430,7 +538,8 @@ public class WorkoutControllerTest {
 
         verify(workoutService).updateWorkout(
                 eq(1L),
-                any(PatchWorkoutRequest.class)
+                any(PatchWorkoutRequest.class),
+                eq(1L)
         );
     }
 
@@ -446,6 +555,7 @@ public class WorkoutControllerTest {
             """.formatted(tooLongNotes);
 
         mockMvc.perform(patch("/api/workout/{id}", 1L)
+                        .with(authentication(authentication))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
                 .andExpect(status().isBadRequest())
@@ -463,10 +573,12 @@ public class WorkoutControllerTest {
 
         when(workoutService.updateWorkout(
                 anyLong(),
-                any(PatchWorkoutRequest.class)
+                any(PatchWorkoutRequest.class),
+                anyLong()
         )).thenThrow(new WorkoutNotFoundException("Workout not found"));
 
         mockMvc.perform(patch("/api/workout/{id}", 999L)
+                        .with(authentication(authentication))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
                 .andExpect(status().isNotFound())
@@ -487,10 +599,12 @@ public class WorkoutControllerTest {
 
         when(workoutService.updateWorkout(
                 eq(1L),
-                any(PatchWorkoutRequest.class)
+                any(PatchWorkoutRequest.class),
+                eq(1L)
         )).thenReturn(response);
 
         mockMvc.perform(patch("/api/workout/{id}", 1L)
+                        .with(authentication(authentication))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content(requestJson))
@@ -502,7 +616,7 @@ public class WorkoutControllerTest {
                 argThat(request ->
                         request.areNotesProvided()
                                 && request.getNotes() == null
-                ));
+                ), eq(1L));
     }
 
     @Test
@@ -522,10 +636,11 @@ public class WorkoutControllerTest {
                 argThat(request ->
                         request.getDate().equals(LocalDate.of(2026, 11, 2))
                                 && !request.areNotesProvided()
-                )
+                ), eq(1L)
         )).thenReturn(response);
 
         mockMvc.perform(patch("/api/workout/{id}", 1L)
+                        .with(authentication(authentication))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content(requestJson))
@@ -537,16 +652,19 @@ public class WorkoutControllerTest {
     @Test
     @DisplayName("Should delete a workout")
     void deleteWorkout_Returns204() throws Exception {
-        mockMvc.perform(delete("/api/workout/{id}", 1L))
+        mockMvc.perform(delete("/api/workout/{id}", 1L)
+                        .with(authentication(authentication))
+)
                 .andExpect(status().isNoContent());
 
-        verify(workoutService).deleteWorkout(1L);
+        verify(workoutService).deleteWorkout(1L, 1L);
     }
 
     @Test
     @DisplayName("Should return 400 when deleting workout with invalid ID")
     void deleteWorkout_InvalidId_Returns400() throws Exception {
-        mockMvc.perform(delete("/api/workout/{id}", "abc"))
+        mockMvc.perform(delete("/api/workout/{id}", "abc")
+                        .with(authentication(authentication)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("WRONG_ID"));
     }
@@ -556,9 +674,10 @@ public class WorkoutControllerTest {
     void deleteWorkout_NotFound_Returns404() throws Exception {
         doThrow(new WorkoutNotFoundException("Workout not found"))
                 .when(workoutService)
-                .deleteWorkout(999L);
+                .deleteWorkout(999L, 1L);
 
-        mockMvc.perform(delete("/api/workout/{id}", 999L))
+        mockMvc.perform(delete("/api/workout/{id}", 999L)
+                        .with(authentication(authentication)))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code").value("WORKOUT_NOT_FOUND"));
     }
@@ -576,10 +695,11 @@ public class WorkoutControllerTest {
         second.setId(2L);
         second.setDate(LocalDate.of(2026, 11, 2));
 
-        when(workoutService.findAll())
+        when(workoutService.findAll(anyLong()))
                 .thenReturn(List.of(first, second));
 
         mockMvc.perform(get("/api/workout/all")
+                        .with(authentication(authentication))
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -621,10 +741,12 @@ public class WorkoutControllerTest {
 
         when(workoutService.replaceWorkout(
                 eq(1L),
-                any(CreateWorkoutRequest.class)
+                any(CreateWorkoutRequest.class),
+                eq(1L)
         )).thenReturn(response);
 
         mockMvc.perform(put("/api/workout/{id}", 1L)
+                        .with(authentication(authentication))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content(requestJson))
@@ -635,7 +757,8 @@ public class WorkoutControllerTest {
 
         verify(workoutService).replaceWorkout(
                 eq(1L),
-                any(CreateWorkoutRequest.class)
+                any(CreateWorkoutRequest.class),
+                eq(1L)
         );
     }
 

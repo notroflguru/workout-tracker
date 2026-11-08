@@ -56,6 +56,6 @@ public class SecurityUser implements UserDetails {
     }
 
     public User getUser() {
-        return user;
+        return this.user;
     }
 }

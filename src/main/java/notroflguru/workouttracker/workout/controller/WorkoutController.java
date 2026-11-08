@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import notroflguru.workouttracker.user.security.SecurityUser;
 import notroflguru.workouttracker.workout.dto.request.PatchWorkoutRequest;
 import notroflguru.workouttracker.workout.dto.response.ShortWorkoutResponse;
 import notroflguru.workouttracker.workout.dto.response.WorkoutResponse;
@@ -13,6 +14,7 @@ import notroflguru.workouttracker.workout.dto.request.CreateWorkoutRequest;
 import notroflguru.workouttracker.workout.service.WorkoutService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -102,9 +104,11 @@ public class WorkoutController {
             )
     })
     public ResponseEntity<WorkoutResponse> createWorkout (
-        @Valid @RequestBody CreateWorkoutRequest request
+        @Valid @RequestBody CreateWorkoutRequest request,
+        @AuthenticationPrincipal SecurityUser userDetails
     ) {
-        WorkoutResponse response = service.createWorkout(request);
+        Long userId = userDetails.getUser().getId();
+        WorkoutResponse response = service.createWorkout(request, userId);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -174,9 +178,11 @@ public class WorkoutController {
             }
     )
     public ResponseEntity<WorkoutResponse> findById (
-            @PathVariable("id") Long id
+            @PathVariable("id") Long id,
+            @AuthenticationPrincipal SecurityUser userDetails
     ) {
-        WorkoutResponse response = service.findWorkoutById(id);
+        Long userId = userDetails.getUser().getId();
+        WorkoutResponse response = service.findWorkoutById(id, userId);
         return ResponseEntity.ok(response);
     }
 
@@ -281,9 +287,11 @@ public class WorkoutController {
     )
     public ResponseEntity<WorkoutResponse> patchWorkout(
             @PathVariable Long id,
-            @Valid @RequestBody PatchWorkoutRequest request
+            @Valid @RequestBody PatchWorkoutRequest request,
+            @AuthenticationPrincipal SecurityUser userDetails
     ) {
-        WorkoutResponse response = service.updateWorkout(id, request);
+        Long userId = userDetails.getUser().getId();
+        WorkoutResponse response = service.updateWorkout(id, request, userId);
         return ResponseEntity.ok(response);
     }
 
@@ -317,9 +325,11 @@ public class WorkoutController {
             }
     )
     public ResponseEntity<Void> deleteWorkout(
-            @PathVariable Long id
+            @PathVariable Long id,
+            @AuthenticationPrincipal SecurityUser userDetails
     ) {
-        service.deleteWorkout(id);
+        Long userId = userDetails.getUser().getId();
+        service.deleteWorkout(id, userId);
         return ResponseEntity.noContent().build();
     }
 
@@ -371,8 +381,12 @@ public class WorkoutController {
                     )
             }
     )
-    public ResponseEntity<List<ShortWorkoutResponse>> findAll() {
-        return ResponseEntity.ok(service.findAll());
+    public ResponseEntity<List<ShortWorkoutResponse>> findAll(
+            @AuthenticationPrincipal SecurityUser userDetails
+            ) {
+        Long userId = userDetails.getUser().getId();
+
+        return ResponseEntity.ok(service.findAll(userId));
     }
 
     @PutMapping("/{id}")
@@ -469,9 +483,11 @@ public class WorkoutController {
     )
     public ResponseEntity<WorkoutResponse> replaceWorkout(
             @PathVariable Long id,
-            @Valid @RequestBody CreateWorkoutRequest request
+            @Valid @RequestBody CreateWorkoutRequest request,
+            @AuthenticationPrincipal SecurityUser userDetails
     ) {
-        WorkoutResponse response = service.replaceWorkout(id, request);
+        Long userId = userDetails.getUser().getId();
+        WorkoutResponse response = service.replaceWorkout(id, request, userId);
 
         return ResponseEntity.ok(response);
     }
