@@ -96,7 +96,7 @@ class AuthControllerTest {
     @DisplayName("Регистрация с занятым login возвращает 409")
     void register_WhenUserExists_ReturnsConflict() throws Exception {
         when(userService.register(any(RegisterRequest.class)))
-                .thenThrow(new UserAlreadyExistsException("Логин уже занят"));
+                .thenThrow(new UserAlreadyExistsException("логином", "pavel"));
 
         mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)

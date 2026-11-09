@@ -61,12 +61,12 @@ public class WorkoutService {
 
     private Workout findById(Long id, Long userId) {
         return workoutRepository.findWithExercisesByIdAndUser_Id(id, userId)
-                .orElseThrow(() -> new WorkoutNotFoundException("Workout not found"));
+                .orElseThrow(WorkoutNotFoundException::new);
     }
 
     public WorkoutResponse createWorkout(CreateWorkoutRequest request, Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
+                .orElseThrow(UserNotFoundException::new);
 
         Workout workout = new Workout();
         workout.setUser(user);
@@ -99,9 +99,7 @@ public class WorkoutService {
         Exercise exercise = exercisesById.get(request.getExerciseId());
 
         if (exercise == null) {
-            throw new ExerciseNotFoundException(
-                    "Exercise not found: " + request.getExerciseId()
-            );
+            throw new ExerciseNotFoundException();
         }
 
         WorkoutExercise workoutExercise =
@@ -154,7 +152,7 @@ public class WorkoutService {
     public void deleteWorkout(Long id, Long userId) {
 
         if (!workoutRepository.existsByIdAndUser_Id(id, userId)) {
-            throw new WorkoutNotFoundException("Workout not found");
+            throw new WorkoutNotFoundException();
         }
 
         log.info("Successfully delete workout with ID: {}", id);

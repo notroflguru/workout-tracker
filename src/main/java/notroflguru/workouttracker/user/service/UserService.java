@@ -28,7 +28,11 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, JwtCore jwtCore, UserMapper userMapper) {
+    public UserService(UserRepository userRepository,
+                       PasswordEncoder passwordEncoder,
+                       AuthenticationManager authenticationManager,
+                       JwtCore jwtCore,
+                       UserMapper userMapper) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
@@ -42,9 +46,13 @@ public class UserService {
         String login = normalizeIdentifier(request.getLogin());
         String email = normalizeIdentifier(request.getEmail());
 
-        if (userRepository.existsByLoginOrEmail(login, email)) {
-            throw new UserAlreadyExistsException("User already exists!");
-        }
+        userRepository.findByLoginOrEmail(login, email).ifPresent(existingUser -> {
+            if (existingUser.getEmail().equalsIgnoreCase(email)) {
+                throw new UserAlreadyExistsException("почтой", email);
+            } else {
+                throw new UserAlreadyExistsException("логином", login);
+            }
+        });
 
         User user = new User();
 

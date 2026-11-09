@@ -28,6 +28,77 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    //  ** CUSTOM EXCEPTIONS **
+
+    // USER EXCEPTIONS
+
+
+    @ExceptionHandler(UserAlreadyExistsException.class)
+    public ResponseEntity<ErrorResponse> handleUserAlreadyExistsException(UserAlreadyExistsException exception) {
+
+        log.warn("User already exists exception: {}", exception.getMessage());
+
+        ErrorResponse errorResponse = new ErrorResponse("USER_ALREADY_EXISTS", exception.getMessage(), LocalDateTime.now());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleUserNotFoundException(UserNotFoundException exception) {
+
+        log.warn("Could not find user (UserNotFoundException): {}", exception.getMessage());
+
+        ErrorResponse errorResponse = new ErrorResponse("USER_NOT_FOUND", exception.getMessage(), LocalDateTime.now());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+    }
+
+    @ExceptionHandler(UsernameNotFoundException.class) // NOT A CUSTOM EXCEPTION, BUT LEFT THERE SINCE PLAYS THE SAME ROLE AS UserNotFoundException
+    public ResponseEntity<ErrorResponse> handleUsernameNotFoundException(UsernameNotFoundException exception) {
+
+        log.warn("Could not find user (UsernameNotFoundException): {}", exception.getMessage());
+
+        ErrorResponse errorResponse = new ErrorResponse("USER_NOT_FOUND", exception.getMessage(), LocalDateTime.now());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+    }
+
+
+    // WORKOUT EXCEPTIONS
+
+
+    @ExceptionHandler(WorkoutNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleWorkoutNotFoundException(WorkoutNotFoundException exception) {
+
+        log.warn("Could not find workout: {}", exception.getMessage());
+
+        ErrorResponse errorResponse = new ErrorResponse("WORKOUT_NOT_FOUND", exception.getMessage(), LocalDateTime.now());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+    }
+
+
+    // EXERCISE EXCEPTIONS
+
+
+    @ExceptionHandler(ExerciseNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleExerciseNotFoundException(ExerciseNotFoundException exception) {
+
+        log.warn("Exercise not found: {}", exception.getMessage());
+
+        ErrorResponse errorResponse = new ErrorResponse("EXERCISE_NOT_FOUND", exception.getMessage(), LocalDateTime.now());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+    }
+
+    @ExceptionHandler(ExerciseAlreadyExistsException.class)
+    public ResponseEntity<ErrorResponse> handleExerciseAlreadyExistsException(ExerciseAlreadyExistsException exception) {
+
+        log.warn("Exercise already exists: {}", exception.getMessage());
+
+        ErrorResponse errorResponse = new ErrorResponse("EXERCISE_ALREADY_EXISTS", exception.getMessage(), LocalDateTime.now());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+    }
+
+
+    // OTHERS
+
+
     @ExceptionHandler(NoResourceFoundException.class)
     public ResponseEntity<ErrorResponse> handleNoResourceFoundException(NoResourceFoundException exception) {
 
@@ -46,24 +117,6 @@ public class GlobalExceptionHandler {
         exception.getBindingResult().getFieldErrors().forEach(error -> errors.put(error.getField(), error.getDefaultMessage()));
         ErrorResponse errorResponse = new ErrorResponse("VALIDATION_FAILED", "Request validation failed", errors, LocalDateTime.now());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
-    }
-
-    @ExceptionHandler(ExerciseNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleExerciseNotFoundException(ExerciseNotFoundException exception) {
-
-        log.warn("Exercise not found: {}", exception.getMessage());
-
-        ErrorResponse errorResponse = new ErrorResponse("EXERCISE_NOT_FOUND", exception.getMessage(), LocalDateTime.now());
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
-    }
-
-    @ExceptionHandler(ExerciseAlreadyExistsException.class)
-    public ResponseEntity<ErrorResponse> handleExerciseAlreadyExistsException(ExerciseAlreadyExistsException exception) {
-
-        log.warn("Exercise already exists: {}", exception.getMessage());
-
-        ErrorResponse errorResponse = new ErrorResponse("EXERCISE_ALREADY_EXISTS", exception.getMessage(), LocalDateTime.now());
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
@@ -125,33 +178,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
 
-    @ExceptionHandler(WorkoutNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleWorkoutNotFoundException(WorkoutNotFoundException exception) {
-
-        log.warn("Could not find workout: {}", exception.getMessage());
-
-        ErrorResponse errorResponse = new ErrorResponse("WORKOUT_NOT_FOUND", exception.getMessage(), LocalDateTime.now());
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
-    }
-
-    @ExceptionHandler(UserAlreadyExistsException.class)
-    public ResponseEntity<ErrorResponse> handleUserAlreadyExistsException(UserAlreadyExistsException exception) {
-
-        log.warn("User already exists exception: {}", exception.getMessage());
-
-        ErrorResponse errorResponse = new ErrorResponse("USER_ALREADY_EXISTS", exception.getMessage(), LocalDateTime.now());
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
-    }
-
-    @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleUserNotFoundException(UserNotFoundException exception) {
-
-        log.warn("Could not find user (UserNotFoundException): {}", exception.getMessage());
-
-        ErrorResponse errorResponse = new ErrorResponse("USER_NOT_FOUND", exception.getMessage(), LocalDateTime.now());
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
-    }
-
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ErrorResponse> handleBadCredentialsException(BadCredentialsException exception) {
 
@@ -161,12 +187,4 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
     }
 
-    @ExceptionHandler(UsernameNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleUsernameNotFoundException(UsernameNotFoundException exception) {
-
-        log.warn("Could not find user (UsernameNotFoundException): {}", exception.getMessage());
-
-        ErrorResponse errorResponse = new ErrorResponse("USER_NOT_FOUND", exception.getMessage(), LocalDateTime.now());
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
-    }
 }

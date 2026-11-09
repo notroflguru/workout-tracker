@@ -289,7 +289,7 @@ public class ExerciseControllerTest {
                 """;
 
         Mockito.when(exerciseService.createExercise(Mockito.any(CreateExerciseRequest.class)))
-                .thenThrow(new ExerciseAlreadyExistsException("Exercise already exists: Bench press"));
+                .thenThrow(new ExerciseAlreadyExistsException());
 
         mockMvc.perform(post("/api/exercise")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -297,7 +297,7 @@ public class ExerciseControllerTest {
                 .andDo(print())
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.code").value("EXERCISE_ALREADY_EXISTS"))
-                .andExpect(jsonPath("$.message").value("Exercise already exists: Bench press"));
+                .andExpect(jsonPath("$.message").value("Упражнение с таким названием уже существует"));
 
     }
 
@@ -367,13 +367,13 @@ public class ExerciseControllerTest {
         String nonExistingName = "Unknown_Exercise";
 
         Mockito.when(exerciseService.findByName(eq(nonExistingName)))
-                .thenThrow(new ExerciseNotFoundException("Exercise not found with name: " + nonExistingName));
+                .thenThrow(new ExerciseNotFoundException());
 
         mockMvc.perform(get("/api/exercise/name/{name}", nonExistingName))
                 .andDo(print())
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code").value("EXERCISE_NOT_FOUND"))
-                .andExpect(jsonPath("$.message").value("Exercise not found with name: Unknown_Exercise"));
+                .andExpect(jsonPath("$.message").value("Упражнение не найдено"));
     }
 
     @Test
@@ -383,12 +383,12 @@ public class ExerciseControllerTest {
         Long nonExistingId = 999L;
 
         Mockito.when(exerciseService.findById(Mockito.any(Long.class)))
-                .thenThrow(new ExerciseNotFoundException("Exercise with id " + nonExistingId + " was not found"));
+                .thenThrow(new ExerciseNotFoundException());
 
         mockMvc.perform(get("/api/exercise/{id}", nonExistingId))
                 .andDo(print())
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code").value("EXERCISE_NOT_FOUND"))
-                .andExpect(jsonPath("$.message").value("Exercise with id 999 was not found"));
+                .andExpect(jsonPath("$.message").value("Упражнение не найдено"));
     }
 }

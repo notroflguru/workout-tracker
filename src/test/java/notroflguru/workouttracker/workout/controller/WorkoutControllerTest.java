@@ -461,12 +461,13 @@ public class WorkoutControllerTest {
     @DisplayName("Should return 404 when workout does not exist")
     void findWorkoutById_NotFound_Returns404() throws Exception {
         when(workoutService.findWorkoutById(999L, 1L))
-                .thenThrow(new WorkoutNotFoundException(""));
+                .thenThrow(new WorkoutNotFoundException());
 
         mockMvc.perform(get("/api/workout/{id}", 999L)
                         .with(authentication(authentication)))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.code").value("WORKOUT_NOT_FOUND"));
+                .andExpect(jsonPath("$.code").value("WORKOUT_NOT_FOUND"))
+                .andExpect(jsonPath("$.message").value("Тренировка не найдена"));
     }
 
     @Test
@@ -575,14 +576,15 @@ public class WorkoutControllerTest {
                 anyLong(),
                 any(PatchWorkoutRequest.class),
                 anyLong()
-        )).thenThrow(new WorkoutNotFoundException("Workout not found"));
+        )).thenThrow(new WorkoutNotFoundException());
 
         mockMvc.perform(patch("/api/workout/{id}", 999L)
                         .with(authentication(authentication))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.code").value("WORKOUT_NOT_FOUND"));
+                .andExpect(jsonPath("$.code").value("WORKOUT_NOT_FOUND"))
+                .andExpect(jsonPath("$.message").value("Тренировка не найдена"));
     }
 
     @Test
@@ -672,14 +674,15 @@ public class WorkoutControllerTest {
     @Test
     @DisplayName("Should return 404 when deleting nonexistent workout")
     void deleteWorkout_NotFound_Returns404() throws Exception {
-        doThrow(new WorkoutNotFoundException("Workout not found"))
+        doThrow(new WorkoutNotFoundException())
                 .when(workoutService)
                 .deleteWorkout(999L, 1L);
 
         mockMvc.perform(delete("/api/workout/{id}", 999L)
                         .with(authentication(authentication)))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.code").value("WORKOUT_NOT_FOUND"));
+                .andExpect(jsonPath("$.code").value("WORKOUT_NOT_FOUND"))
+                .andExpect(jsonPath("$.message").value("Тренировка не найдена"));
     }
 
 

@@ -31,7 +31,7 @@ public class ExerciseService {
     public ExerciseResponse createExercise(CreateExerciseRequest request) {
 
         if (repository.findByNameIgnoreCase(request.getName()).isPresent()) {
-            throw new ExerciseAlreadyExistsException("Exercise already exists: " + request.getName());
+            throw new ExerciseAlreadyExistsException();
         }
 
         Exercise entity = mapper.toEntity(request);
@@ -45,7 +45,7 @@ public class ExerciseService {
     public ExerciseResponse findByName(String name) {
 
         Exercise entity = repository.findByNameIgnoreCase(name)
-                .orElseThrow(() -> new ExerciseNotFoundException("Exercise not found: " + name));
+                .orElseThrow(ExerciseNotFoundException::new);
 
         log.debug("Successfully found exercise with name: {}", name);
 
@@ -55,7 +55,7 @@ public class ExerciseService {
     public ExerciseResponse findById(Long id) {
 
         Exercise entity = repository.findById(id)
-                .orElseThrow(() -> new ExerciseNotFoundException("Exercise with id" + id + "not found"));
+                .orElseThrow(ExerciseNotFoundException::new);
 
         log.debug("Successfully found exercise with id: {}", id);
 

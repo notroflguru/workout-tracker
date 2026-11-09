@@ -1,5 +1,8 @@
 package notroflguru.workouttracker.user.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+
+@JsonPropertyOrder({"token", "user"})
 public class AuthResponse {
 
     private String token;

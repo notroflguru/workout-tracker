@@ -22,8 +22,6 @@ public class Workout {
     private String notes;
 
     @OneToMany(mappedBy = "workout", cascade = CascadeType.ALL, orphanRemoval = true)
-    // cascade = CascadeType.ALL все действия с родительским объектом автоматически совершаются и с дочерним
-    // orphanRemoval = true удаляет дочерний объект тогда, когда его отвязывают от родительского
     @OrderBy("orderNumber ASC")
     private List<WorkoutExercise> workoutExerciseList = new ArrayList<>();
 
