@@ -1,15 +1,26 @@
 package notroflguru.workouttracker.user.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import io.swagger.v3.oas.annotations.media.Schema;
 import notroflguru.workouttracker.user.model.Role;
 
 @JsonPropertyOrder({"id", "email", "login", "name", "role"})
+@Schema(description = "Объект ответа пользователя")
 public class UserResponse {
 
+    @Schema(description = "Уникальный идентификатор пользователя", example = "1")
     private Long id;
+
+    @Schema(description = "Логин пользователя", example = "user-login")
     private String login;
+
+    @Schema(description = "Имя пользователя", example = "pavel")
     private String name;
+
+    @Schema(description = "Почта пользователя", example = "user@example.com")
     private String email;
+
+    @Schema(description = "Роль пользователя", example = "USER")
     private Role role;
 
     public Long getId() {

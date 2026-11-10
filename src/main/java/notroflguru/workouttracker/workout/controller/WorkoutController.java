@@ -168,7 +168,7 @@ public class WorkoutController {
                                             value = """
                                                 {
                                                   "code": "WORKOUT_NOT_FOUND",
-                                                  "message": "Could not find workout",
+                                                  "message": "Тренировка не найдена",
                                                   "timestamp": "2026-01-01 00:01:02"
                                                 }
                                                 """
@@ -276,7 +276,7 @@ public class WorkoutController {
                                             value = """
                                                 {
                                                   "code": "WORKOUT_NOT_FOUND",
-                                                  "message": "Workout not found",
+                                                  "message": "Тренировка не найдена",
                                                   "timestamp": "2026-01-01 00:01:02"
                                                 }
                                                 """
@@ -315,7 +315,7 @@ public class WorkoutController {
                                             value = """
                                                 {
                                                   "code": "WORKOUT_NOT_FOUND",
-                                                  "message": "Could not find workout",
+                                                  "message": "Тренировка не найдена",
                                                   "timestamp": "2026-01-01 00:01:02"
                                                 }
                                                 """
@@ -472,7 +472,7 @@ public class WorkoutController {
                                             value = """
                                                 {
                                                   "code": "WORKOUT_NOT_FOUND",
-                                                  "message": "Could not find workout",
+                                                  "message": "Тренировка не найдена",
                                                   "timestamp": "2026-01-01 00:01:02"
                                                 }
                                                 """

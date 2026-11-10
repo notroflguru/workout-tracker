@@ -1,5 +1,6 @@
 package notroflguru.workouttracker.workout.dto.request;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 
@@ -7,13 +8,16 @@ import java.util.List;
 
 public class CreateWorkoutExerciseRequest {
     @NotNull @Positive
+    @Schema(description = "Уникальный идентификатор", example = "1")
     private Long exerciseId;
 
     @Positive
+    @Schema(description = "Порядок выполнения упражнения в тренировке", example = "1")
     private int orderNumber;
 
-    @NotNull @NotEmpty @Valid
-    private List<CreateExerciseSetRequest> exerciseSetRequestList;
+    @NotNull @NotEmpty
+    @Schema(description = "Список подходов в упражнении")
+    private List<@Valid CreateExerciseSetRequest> exerciseSetRequestList;
 
     public Long getExerciseId() {
         return exerciseId;

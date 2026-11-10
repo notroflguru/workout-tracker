@@ -1,24 +1,27 @@
 package notroflguru.workouttracker.exercise.dto.request;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 import notroflguru.workouttracker.exercise.model.Muscle;
 
 import java.util.List;
 
+@Schema(description = "Объект запроса создания упражнения")
 public class CreateExerciseRequest {
 
     @NotBlank
-    @Size(min = 5, message = "Name is too short")
-    @Size(max = 63, message = "Name is too long")
+    @Size(min = 5, max = 63, message = "Название должно быть от 5 до 63 символов")
+    @Schema(description = "Название упражнения", example = "Squat")
     private String name;
 
-    @Size(min = 5, message = "Description is too short")
-    @Size(max = 255, message = "Description is too long")
+    @Size(min = 5, max = 255, message = "Описание должно быть от 5 до 255 символов")
     @NotBlank
+    @Schema(description = "Описание упражнения", example = "Приседания со штангой на плечах")
     private String description;
 
     @NotEmpty
-    @Size(max = 5, message = "Too much muscles")
+    @Size(max = 5, message = "Количество мышц не должно превышать 5")
+    @Schema(description = "Список мышц, которые задействуются в упражнении", example = "[\"Quadriceps\", \"Hamstrings\", \"Glutes\"]")
     private List<Muscle> muscleList;
 
     public String getName() {

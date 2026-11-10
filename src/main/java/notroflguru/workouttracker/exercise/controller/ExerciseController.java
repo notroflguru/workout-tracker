@@ -37,7 +37,7 @@ public class ExerciseController {
                                       {
                                         "id": 1,
                                         "name": "Deadlift",
-                                        "description": "Deadlift with a barbell",
+                                        "description": "Классическая становая тяга",
                                         "muscleList": [
                                           "Hamstrings",
                                           "Glutes"
@@ -46,7 +46,7 @@ public class ExerciseController {
                                       {
                                         "id": 2,
                                         "name": "Squat",
-                                        "description": "Squat with a barbell",
+                                        "description": "Приседания со штангой на плечах",
                                         "muscleList": [
                                           "Quadriceps",
                                           "Hamstrings",
@@ -56,7 +56,7 @@ public class ExerciseController {
                                       {
                                         "id": 3,
                                         "name": "Bench press",
-                                        "description": "Bench press with a barbell",
+                                        "description": "Классический жим штанги лежа на горизонтальной скамье",
                                         "muscleList": [
                                           "Chest",
                                           "Triceps",
@@ -83,7 +83,7 @@ public class ExerciseController {
                             {
                               "id": 3,
                               "name": "Bench press",
-                              "description": "Bench press with a barbell",
+                              "description": "Классический жим штанги лежа на горизонтальной скамье",
                               "muscleList": [
                                 "Chest",
                                 "Triceps",
@@ -117,7 +117,7 @@ public class ExerciseController {
                                     value = """
                                 {
                                   "code": "EXERCISE_ALREADY_EXISTS",
-                                  "message": "Exercise with this name already exists",
+                                  "message": "Упражнение с таким названием уже существует",
                                   "timestamp": "2026-01-01 00:01:02"
                                 }
                                 """
@@ -142,7 +142,7 @@ public class ExerciseController {
                     value = """
                             {
                               "code": "EXERCISE_NOT_FOUND",
-                              "message": "Exercise not found: squat",
+                              "message": "Упражнение не найдено",
                               "timestamp": "2026-01-01 00:01:02"
                             }
                             """
@@ -166,7 +166,7 @@ public class ExerciseController {
                                     value = """
                             {
                               "code": "EXERCISE_NOT_FOUND",
-                              "message": "Exercise with id 5 not found",
+                              "message": "Упражнение не найдено",
                               "timestamp": "2026-01-01 00:01:02"
                             }
                             """

@@ -15,10 +15,10 @@ public class ExerciseResponse {
     @Schema(description = "Название упражнения", example = "Squat")
     private String name;
 
-    @Schema(description = "Описание упражнения", example = "Squat with a barbell")
+    @Schema(description = "Описание упражнения", example = "Приседания со штангой на плечах")
     private String description;
 
-    @Schema(description = "Список мышц, задействующихся в упражнении", example = "[\"Quadriceps\", \"Hamstrings\", \"Glutes\"]")
+    @Schema(description = "Список мышц, которые задействуются в упражнении", example = "[\"Quadriceps\", \"Hamstrings\", \"Glutes\"]")
     private List<Muscle> muscleList;
 
     public Long getId() {

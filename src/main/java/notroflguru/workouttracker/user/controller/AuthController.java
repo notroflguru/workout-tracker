@@ -1,6 +1,9 @@
 package notroflguru.workouttracker.user.controller;
 
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import notroflguru.workouttracker.user.dto.UserMapper;
 import notroflguru.workouttracker.user.dto.request.LoginRequest;
@@ -18,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController()
 @RequestMapping("/api/auth")
+@Tag(name = "Регистрация и авторизация", description = "Создание и авторизация пользователей")
 public class AuthController {
 
     private final UserService service;
@@ -27,6 +31,10 @@ public class AuthController {
     }
 
     @PostMapping("/register")
+    @Operation(summary = "Регистрация (и автоматическая авторизация) пользователя",
+    responses = {
+            @ApiResponse(responseCode = "201", description = "Регистрация прошла успешно")
+    })
     public ResponseEntity<AuthResponse> registerUser(
             @Valid @RequestBody RegisterRequest request) {
 
@@ -36,6 +44,10 @@ public class AuthController {
     }
 
     @PostMapping("/login")
+    @Operation(summary = "Авторизация пользователя",
+    responses = {
+            @ApiResponse(responseCode = "200", description = "Авторизация прошла успешно")
+    })
     public ResponseEntity<AuthResponse> loginUser(
             @Valid @RequestBody LoginRequest request) {
 
