@@ -109,7 +109,7 @@ class AuthControllerTest {
                                 """))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.code").value("USER_ALREADY_EXISTS"))
-                .andExpect(jsonPath("$.message").value("Логин уже занят"));
+                .andExpect(jsonPath("$.message").value("Пользователь с логином pavel уже существует"));
     }
 
     @Test

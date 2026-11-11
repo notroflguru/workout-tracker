@@ -5,7 +5,6 @@ import notroflguru.workouttracker.user.dto.request.LoginRequest;
 import notroflguru.workouttracker.user.dto.request.RegisterRequest;
 import notroflguru.workouttracker.user.dto.response.AuthResponse;
 import notroflguru.workouttracker.user.exception.UserAlreadyExistsException;
-import notroflguru.workouttracker.user.exception.UserNotFoundException;
 import notroflguru.workouttracker.user.model.Role;
 import notroflguru.workouttracker.user.model.User;
 import notroflguru.workouttracker.user.repository.UserRepository;
@@ -72,10 +71,8 @@ class UserServiceTest {
     @Test
     void register_SavesUserWithEncodedPasswordAndUserRole() {
         RegisterRequest request = registerRequest();
-        User savedUser = new User();
-        savedUser.setId(1L);
+        User savedUser = user();
 
-        when(userRepository.existsByLoginOrEmail("pavel", "pavel@example.com")).thenReturn(false);
         when(passwordEncoder.encode("StrongPassword123")).thenReturn("encoded-password");
         when(userRepository.save(any(User.class))).thenReturn(savedUser);
         when(jwtCore.generateToken(any(UserDetails.class))).thenReturn("jwt-token");
@@ -101,18 +98,15 @@ class UserServiceTest {
         RegisterRequest request = registerRequest();
         request.setLogin("  Pavel  ");
         request.setEmail("  PAVEL@EXAMPLE.COM ");
-        User savedUser = new User();
-        savedUser.setId(1L);
-        savedUser.setLogin("pavel");
-        savedUser.setEmail("pavel@example.com");
+        User savedUser = user();
 
-        when(userRepository.existsByLoginOrEmail("pavel", "pavel@example.com")).thenReturn(false);
+        when(userRepository.findByLoginOrEmail("pavel", "pavel@example.com")).thenReturn(Optional.empty());
         when(userRepository.save(any(User.class))).thenReturn(savedUser);
         when(jwtCore.generateToken(any(UserDetails.class))).thenReturn("");
 
         AuthResponse result = userService.register(request);
 
-        verify(userRepository).existsByLoginOrEmail("pavel", "pavel@example.com");
+        verify(userRepository).findByLoginOrEmail("pavel", "pavel@example.com");
         assertEquals("pavel", result.getUser().getLogin());
         assertEquals("pavel@example.com", result.getUser().getEmail());
     }
@@ -120,7 +114,8 @@ class UserServiceTest {
     @Test
     void register_WhenLoginExists_ThrowsConflictException() {
         RegisterRequest request = registerRequest();
-        when(userRepository.existsByLoginOrEmail("pavel", "pavel@example.com")).thenReturn(true);
+        User user = user();
+        when(userRepository.findByLoginOrEmail("pavel", "pavel@example.com")).thenReturn(Optional.of(user));
 
         assertThrows(
                 UserAlreadyExistsException.class,
@@ -133,7 +128,8 @@ class UserServiceTest {
     @Test
     void register_WhenEmailExists_ThrowsConflictException() {
         RegisterRequest request = registerRequest();
-        when(userRepository.existsByLoginOrEmail("pavel", "pavel@example.com")).thenReturn(true);
+        User user = user();
+        when(userRepository.findByLoginOrEmail("pavel", "pavel@example.com")).thenReturn(Optional.of(user));
 
         assertThrows(
                 UserAlreadyExistsException.class,
@@ -149,10 +145,7 @@ class UserServiceTest {
         request.setIdentifier("pavel");
         request.setPassword("StrongPassword123");
 
-        User user = new User();
-        user.setLogin("pavel");
-        user.setId(1L);
-        user.setPasswordHash("encoded-password");
+        User user = user();
 
         UserDetails userDetails = new SecurityUser(user);
 
@@ -194,5 +187,15 @@ class UserServiceTest {
         request.setEmail("pavel@example.com");
         request.setPassword("StrongPassword123");
         return request;
+    }
+
+    private User user() {
+        User user = new User();
+        user.setLogin("pavel");
+        user.setEmail("pavel@example.com");
+        user.setName("Pavel");
+        user.setPasswordHash("HashedPassword123456");
+        user.setId(1L);
+        return user;
     }
 }
