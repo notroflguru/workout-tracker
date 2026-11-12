@@ -1,6 +1,7 @@
 package notroflguru.workouttracker.user.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 
 @Entity
 @Table(name = "users")
@@ -9,10 +10,11 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "login", nullable = false, unique = true)
+    @Column(name = "login", nullable = false, unique = true, length = 20)
     private String login;
 
-    @Column(name = "name")
+    @Size(max = 100)
+    @Column(name = "name", length = 100)
     private String name;
 
     @Column(name = "email", nullable = false, unique = true)
@@ -22,7 +24,7 @@ public class User {
     private String passwordHash;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "role", nullable = false)
+    @Column(name = "role", nullable = false, length = 50)
     private Role role;
 
     public Long getId() {

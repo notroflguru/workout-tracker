@@ -1,8 +1,10 @@
 package notroflguru.workouttracker.user.service;
 
-import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.transaction.annotation.Transactional;
 import notroflguru.workouttracker.user.dto.UserMapper;
 import notroflguru.workouttracker.user.dto.request.LoginRequest;
+import notroflguru.workouttracker.user.dto.request.PatchUserRequest;
 import notroflguru.workouttracker.user.dto.request.RegisterRequest;
 import notroflguru.workouttracker.user.dto.response.AuthResponse;
 import notroflguru.workouttracker.user.dto.response.UserResponse;
@@ -19,6 +21,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 public class UserService {
 
@@ -71,7 +74,38 @@ public class UserService {
         String token = jwtCore.generateToken(userDetails);
         UserResponse userResponse = userMapper.toResponse(savedUser);
 
+        log.info("Successfully created user with ID: {}", savedUser.getId());
+
         return new AuthResponse(token, userResponse);
+    }
+
+    public UserResponse getUser(SecurityUser userDetails) {
+        log.info("Successfully found user with ID: {}", userDetails.getUser().getId());
+
+        return userMapper.toResponse(userDetails.getUser());
+    }
+
+    @Transactional
+    public UserResponse patchUser(SecurityUser userDetails, PatchUserRequest request) {
+        User user = userRepository.findById(userDetails.getUser().getId()).orElseThrow(UserNotFoundException::new);
+
+        if (request.getName() != null && !request.getName().isBlank()) {
+            user.setName(request.getName());
+        }
+
+        if (request.getEmail() != null && !request.getEmail().isBlank()) {
+            user.setEmail(request.getEmail());
+        }
+
+        if (request.getPassword() != null && !request.getPassword().isBlank()) {
+            user.setPasswordHash(
+                    passwordEncoder.encode(request.getPassword())
+            );
+        }
+
+        log.info("Successfully patched user with ID: {}", user.getId());
+
+        return userMapper.toResponse(user);
     }
 
     public AuthResponse login(LoginRequest request) {
@@ -94,6 +128,8 @@ public class UserService {
 
         String token = jwtCore.generateToken(userDetails);
         UserResponse userResponse = userMapper.toResponse(user);
+
+        log.info("Successfully logged in user with ID: {}", user.getId());
 
         return new AuthResponse(token, userResponse);
     }

@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 import notroflguru.workouttracker.exercise.model.Muscle;
 
-import java.util.List;
+import java.util.Set;
 
 @Schema(description = "Объект запроса создания упражнения")
 public class CreateExerciseRequest {
@@ -22,7 +22,7 @@ public class CreateExerciseRequest {
     @NotEmpty
     @Size(max = 5, message = "Количество мышц не должно превышать 5")
     @Schema(description = "Список мышц, которые задействуются в упражнении", example = "[\"Quadriceps\", \"Hamstrings\", \"Glutes\"]")
-    private List<Muscle> muscleList;
+    private Set<Muscle> muscleList;
 
     public String getName() {
         return name;
@@ -40,11 +40,11 @@ public class CreateExerciseRequest {
         this.description = description;
     }
 
-    public List<Muscle> getMuscleList() {
+    public Set<Muscle> getMuscleList() {
         return muscleList;
     }
 
-    public void setMuscleList(List<Muscle> muscleList) {
+    public void setMuscleList(Set<Muscle> muscleList) {
         this.muscleList = muscleList;
     }
 }

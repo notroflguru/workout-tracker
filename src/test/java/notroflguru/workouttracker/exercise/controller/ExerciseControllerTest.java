@@ -19,7 +19,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.List;
+import java.util.Set;
 
 import static org.mockito.ArgumentMatchers.eq;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -51,7 +51,7 @@ public class ExerciseControllerTest {
         mockResponse.setId(1L);
         mockResponse.setName("Bench press");
         mockResponse.setDescription("Bench press with a barbell");
-        mockResponse.setMuscleList(List.of(Muscle.CHEST, Muscle.TRICEPS, Muscle.FRONT_DELTS));
+        mockResponse.setMuscleList(Set.of(Muscle.CHEST, Muscle.TRICEPS, Muscle.FRONT_DELTS));
         return mockResponse;
     }
 
@@ -237,7 +237,7 @@ public class ExerciseControllerTest {
                 """;
 
         ExerciseResponse mockResponse = mockResponse();
-        mockResponse.setMuscleList(List.of());
+        mockResponse.setMuscleList(Set.of());
 
         Mockito.when(exerciseService.createExercise(Mockito.any(CreateExerciseRequest.class)))
                 .thenReturn(mockResponse);
@@ -263,7 +263,7 @@ public class ExerciseControllerTest {
                 """;
 
         ExerciseResponse mockResponse = mockResponse();
-        mockResponse.setMuscleList(List.of(Muscle.CHEST, Muscle.TRICEPS, Muscle.FRONT_DELTS, Muscle.BICEPS, Muscle.GLUTES, Muscle.ABS));
+        mockResponse.setMuscleList(Set.of(Muscle.CHEST, Muscle.TRICEPS, Muscle.FRONT_DELTS, Muscle.BICEPS, Muscle.GLUTES, Muscle.ABS));
 
         Mockito.when(exerciseService.createExercise(Mockito.any(CreateExerciseRequest.class)))
                 .thenReturn(mockResponse);

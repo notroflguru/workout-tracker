@@ -19,6 +19,7 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -117,7 +118,7 @@ class ExerciseServiceTest {
         CreateExerciseRequest request = new CreateExerciseRequest();
         request.setName(name);
         request.setDescription("Bench press with a barbell");
-        request.setMuscleList(List.of(Muscle.CHEST, Muscle.TRICEPS));
+        request.setMuscleList(Set.of(Muscle.CHEST, Muscle.TRICEPS));
         return request;
     }
 }

@@ -176,6 +176,8 @@ public class WorkoutService {
 
         applyRequest(workout, request);
 
+        log.info("Successfully replaced workout with ID: {}", id);
+
         return mapper.toResponse(workout);
     }
 }

@@ -38,6 +38,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -97,12 +98,12 @@ public class WorkoutServiceTest {
         exercise1 = new Exercise();
         exercise1.setName("Squat");
         exercise1.setDescription("Squat with a barbell");
-        exercise1.setMuscleList(List.of(Muscle.QUADRICEPS, Muscle.HAMSTRINGS, Muscle.GLUTES));
+        exercise1.setMuscleList(Set.of(Muscle.QUADRICEPS, Muscle.HAMSTRINGS, Muscle.GLUTES));
         exerciseRepository.save(exercise1);
         exercise2 = new Exercise();
         exercise2.setName("Deadlift");
         exercise2.setDescription("");
-        exercise2.setMuscleList(List.of(Muscle.HAMSTRINGS, Muscle.GLUTES));
+        exercise2.setMuscleList(Set.of(Muscle.HAMSTRINGS, Muscle.GLUTES));
         exerciseRepository.save(exercise2);
         user = new User();
         user.setPasswordHash("1233456356356");

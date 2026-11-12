@@ -34,7 +34,8 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll() // Эндпоинты для логина и регистрации доступны всем
+                        .requestMatchers("/api/auth/login", "/api/auth/register").permitAll() // Эндпоинты для логина и регистрации доступны всем
+                        .requestMatchers("/api/auth/me").hasAnyRole("ADMIN", "USER") // Свой пользователь только авторизованным
                         .requestMatchers("/api/admin/**").hasRole("ADMIN") // Админские эндпоинты только админам
                         .requestMatchers(
                                 "/api/swagger-ui/**", "/v3/api-docs/**", "/api/docs/**").permitAll() // Эндпоинты с API документацией доступны всем

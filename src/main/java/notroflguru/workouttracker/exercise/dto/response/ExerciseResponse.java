@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.v3.oas.annotations.media.Schema;
 import notroflguru.workouttracker.exercise.model.Muscle;
 
-import java.util.List;
+import java.util.Set;
 
 @JsonPropertyOrder({ "id", "name", "description", "muscleList"})
 @Schema(description = "Объект ответа упражнения")
@@ -19,7 +19,7 @@ public class ExerciseResponse {
     private String description;
 
     @Schema(description = "Список мышц, которые задействуются в упражнении", example = "[\"Quadriceps\", \"Hamstrings\", \"Glutes\"]")
-    private List<Muscle> muscleList;
+    private Set<Muscle> muscleList;
 
     public Long getId() {
         return id;
@@ -45,11 +45,11 @@ public class ExerciseResponse {
         this.description = description;
     }
 
-    public List<Muscle> getMuscleList() {
+    public Set<Muscle> getMuscleList() {
         return muscleList;
     }
 
-    public void setMuscleList(List<Muscle> muscleList) {
+    public void setMuscleList(Set<Muscle> muscleList) {
         this.muscleList = muscleList;
     }
 }

@@ -1,8 +1,11 @@
 package notroflguru.workouttracker.exercise.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Size;
 
-import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "exercise")
@@ -12,7 +15,7 @@ public class Exercise {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "name", unique = true, nullable = false)
+    @Column(name = "name", unique = true, nullable = false, length = 63)
     private String name;
 
     @Column(name = "description", nullable = false)
@@ -20,9 +23,9 @@ public class Exercise {
 
     @ElementCollection
     @CollectionTable(name = "exercise_muscles")   // Вспомогательная таблица exercise - muscle чтобы не хранить списком
-    @Column(name = "muscles", nullable = false)
+    @Column(name = "muscles", nullable = false, length = 127)
     @Enumerated(EnumType.STRING)
-    private List<Muscle> muscleList;
+    private Set<Muscle> muscleList;
 
     public Long getId() {
         return id;
@@ -44,11 +47,11 @@ public class Exercise {
         this.description = description;
     }
 
-    public List<Muscle> getMuscleList() {
+    public Set<Muscle> getMuscleList() {
         return muscleList;
     }
 
-    public void setMuscleList(List<Muscle> muscles) {
+    public void setMuscleList(Set<Muscle> muscles) {
         this.muscleList = muscles;
     }
 }
