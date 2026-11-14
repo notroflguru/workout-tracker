@@ -120,24 +120,30 @@ POST /api/auth/register
 POST /api/auth/login
 ```
 
+### Пользователи
+```text
+GET /api/user/me
+PATCH /api/user/me
+```
+
 ### Упражнения
 
 ```text
-GET  /api/exercise/all
-GET  /api/exercise/{id}
-GET  /api/exercise/name/{name}
-POST /api/exercise
+GET  /api/exercises
+GET  /api/exercises/{id}
+GET  /api/exercises/name/{name}
+POST /api/exercises
 ```
 
 ### Тренировки
 
 ```text
-POST   /api/workout
-GET    /api/workout/{id}
-GET    /api/workout/all
-PATCH  /api/workout/{id}
-PUT    /api/workout/{id}
-DELETE /api/workout/{id}
+POST   /api/workouts
+GET    /api/workouts/{id}
+GET    /api/workouts
+PATCH  /api/workouts/{id}
+PUT    /api/workouts/{id}
+DELETE /api/workouts/{id}
 ```
 
 Для защищённых endpoint’ов передавайте JWT:
@@ -160,6 +166,7 @@ src/main/resources/db/migration
 
 - `V1__init.sql` — создание таблиц;
 - `V1_1__seed_data.sql` — начальные упражнения и мышцы.
+- `V1_2__add_sql_constraints.sql` - ограничения базы данных на пользователей и упражнения
 
 ## Структура проекта
 

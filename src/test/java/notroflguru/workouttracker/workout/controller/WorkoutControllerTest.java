@@ -191,7 +191,7 @@ public class WorkoutControllerTest {
         when(workoutService.createWorkout(any(CreateWorkoutRequest.class), anyLong()))
                 .thenReturn(mockResponse);
 
-        mockMvc.perform(post("/api/workout")
+        mockMvc.perform(post("/api/workouts")
                         .with(authentication(authentication))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
@@ -220,7 +220,7 @@ public class WorkoutControllerTest {
             }
             """;
 
-        mockMvc.perform(post("/api/workout")
+        mockMvc.perform(post("/api/workouts")
                         .with(authentication(authentication))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
@@ -239,7 +239,7 @@ public class WorkoutControllerTest {
             }
             """;
 
-        mockMvc.perform(post("/api/workout")
+        mockMvc.perform(post("/api/workouts")
                         .with(authentication(authentication))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
@@ -263,7 +263,7 @@ public class WorkoutControllerTest {
             }
             """;
 
-        mockMvc.perform(post("/api/workout")
+        mockMvc.perform(post("/api/workouts")
                         .with(authentication(authentication))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
@@ -286,7 +286,7 @@ public class WorkoutControllerTest {
             }
             """;
 
-        mockMvc.perform(post("/api/workout")
+        mockMvc.perform(post("/api/workouts")
                         .with(authentication(authentication))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
@@ -316,7 +316,7 @@ public class WorkoutControllerTest {
             }
             """;
 
-        mockMvc.perform(post("/api/workout")
+        mockMvc.perform(post("/api/workouts")
                         .with(authentication(authentication))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
@@ -346,7 +346,7 @@ public class WorkoutControllerTest {
             }
             """;
 
-        mockMvc.perform(post("/api/workout")
+        mockMvc.perform(post("/api/workouts")
                         .with(authentication(authentication))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
@@ -376,7 +376,7 @@ public class WorkoutControllerTest {
             }
             """;
 
-        mockMvc.perform(post("/api/workout")
+        mockMvc.perform(post("/api/workouts")
                         .with(authentication(authentication))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
@@ -406,7 +406,7 @@ public class WorkoutControllerTest {
             }
             """;
 
-        mockMvc.perform(post("/api/workout")
+        mockMvc.perform(post("/api/workouts")
                         .with(authentication(authentication))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
@@ -445,7 +445,7 @@ public class WorkoutControllerTest {
         when(workoutService.findWorkoutById(1L, 1L))
                 .thenReturn(response);
 
-        mockMvc.perform(get("/api/workout/{id}", 1L)
+        mockMvc.perform(get("/api/workouts/{id}", 1L)
                         .with(authentication(authentication))
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -463,7 +463,7 @@ public class WorkoutControllerTest {
         when(workoutService.findWorkoutById(999L, 1L))
                 .thenThrow(new WorkoutNotFoundException());
 
-        mockMvc.perform(get("/api/workout/{id}", 999L)
+        mockMvc.perform(get("/api/workouts/{id}", 999L)
                         .with(authentication(authentication)))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code").value("WORKOUT_NOT_FOUND"))
@@ -473,7 +473,7 @@ public class WorkoutControllerTest {
     @Test
     @DisplayName("Should return 400 when workout ID is invalid")
     void findWorkoutById_InvalidId_Returns400() throws Exception {
-        mockMvc.perform(get("/api/workout/{id}", "abc")
+        mockMvc.perform(get("/api/workouts/{id}", "abc")
                         .with(authentication(authentication)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("WRONG_ID"));
@@ -499,7 +499,7 @@ public class WorkoutControllerTest {
                 anyLong()
         )).thenReturn(response);
 
-        mockMvc.perform(patch("/api/workout/{id}", 1L)
+        mockMvc.perform(patch("/api/workouts/{id}", 1L)
                         .with(authentication(authentication))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
@@ -528,7 +528,7 @@ public class WorkoutControllerTest {
                 eq(1L)
         )).thenReturn(response);
 
-        mockMvc.perform(patch("/api/workout/{id}", 1L)
+        mockMvc.perform(patch("/api/workouts/{id}", 1L)
                         .with(authentication(authentication))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
@@ -555,7 +555,7 @@ public class WorkoutControllerTest {
             }
             """.formatted(tooLongNotes);
 
-        mockMvc.perform(patch("/api/workout/{id}", 1L)
+        mockMvc.perform(patch("/api/workouts/{id}", 1L)
                         .with(authentication(authentication))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
@@ -578,7 +578,7 @@ public class WorkoutControllerTest {
                 anyLong()
         )).thenThrow(new WorkoutNotFoundException());
 
-        mockMvc.perform(patch("/api/workout/{id}", 999L)
+        mockMvc.perform(patch("/api/workouts/{id}", 999L)
                         .with(authentication(authentication))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
@@ -605,7 +605,7 @@ public class WorkoutControllerTest {
                 eq(1L)
         )).thenReturn(response);
 
-        mockMvc.perform(patch("/api/workout/{id}", 1L)
+        mockMvc.perform(patch("/api/workouts/{id}", 1L)
                         .with(authentication(authentication))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
@@ -641,7 +641,7 @@ public class WorkoutControllerTest {
                 ), eq(1L)
         )).thenReturn(response);
 
-        mockMvc.perform(patch("/api/workout/{id}", 1L)
+        mockMvc.perform(patch("/api/workouts/{id}", 1L)
                         .with(authentication(authentication))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
@@ -654,7 +654,7 @@ public class WorkoutControllerTest {
     @Test
     @DisplayName("Should delete a workout")
     void deleteWorkout_Returns204() throws Exception {
-        mockMvc.perform(delete("/api/workout/{id}", 1L)
+        mockMvc.perform(delete("/api/workouts/{id}", 1L)
                         .with(authentication(authentication))
 )
                 .andExpect(status().isNoContent());
@@ -665,7 +665,7 @@ public class WorkoutControllerTest {
     @Test
     @DisplayName("Should return 400 when deleting workout with invalid ID")
     void deleteWorkout_InvalidId_Returns400() throws Exception {
-        mockMvc.perform(delete("/api/workout/{id}", "abc")
+        mockMvc.perform(delete("/api/workouts/{id}", "abc")
                         .with(authentication(authentication)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("WRONG_ID"));
@@ -678,7 +678,7 @@ public class WorkoutControllerTest {
                 .when(workoutService)
                 .deleteWorkout(999L, 1L);
 
-        mockMvc.perform(delete("/api/workout/{id}", 999L)
+        mockMvc.perform(delete("/api/workouts/{id}", 999L)
                         .with(authentication(authentication)))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code").value("WORKOUT_NOT_FOUND"))
@@ -701,7 +701,7 @@ public class WorkoutControllerTest {
         when(workoutService.findAll(anyLong()))
                 .thenReturn(List.of(first, second));
 
-        mockMvc.perform(get("/api/workout/all")
+        mockMvc.perform(get("/api/workouts")
                         .with(authentication(authentication))
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -748,7 +748,7 @@ public class WorkoutControllerTest {
                 eq(1L)
         )).thenReturn(response);
 
-        mockMvc.perform(put("/api/workout/{id}", 1L)
+        mockMvc.perform(put("/api/workouts/{id}", 1L)
                         .with(authentication(authentication))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)

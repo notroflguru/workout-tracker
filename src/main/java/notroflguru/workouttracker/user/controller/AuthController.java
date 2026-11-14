@@ -13,6 +13,7 @@ import notroflguru.workouttracker.user.dto.response.AuthResponse;
 import notroflguru.workouttracker.user.dto.response.UserResponse;
 import notroflguru.workouttracker.user.model.User;
 import notroflguru.workouttracker.user.security.SecurityUser;
+import notroflguru.workouttracker.user.service.AuthService;
 import notroflguru.workouttracker.user.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,10 +25,10 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Регистрация и авторизация", description = "Создание и авторизация пользователей")
 public class AuthController {
 
-    private final UserService service;
+    private final AuthService service;
 
-    public AuthController(UserService userService) {
-        this.service = userService;
+    public AuthController(AuthService authService) {
+        this.service = authService;
     }
 
     @PostMapping("/register")
@@ -54,34 +55,6 @@ public class AuthController {
     ) {
 
         AuthResponse response = service.login(request);
-
-        return ResponseEntity.ok(response);
-    }
-
-    @GetMapping("/me")
-    @Operation(summary = "Получение текущего пользователя",
-    responses = {
-            @ApiResponse(responseCode = "200", description = "Пользователь получен")
-    })
-    public ResponseEntity<UserResponse> getUser(
-            @AuthenticationPrincipal SecurityUser userDetails
-            ) {
-
-        UserResponse response = service.getUser(userDetails);
-
-        return ResponseEntity.ok(response);
-    }
-
-    @PatchMapping("/me")
-    @Operation(summary = "Изменение почты, имени и пароля текущего пользователя",
-    responses = {@ApiResponse(responseCode = "200", description = "Пользователь успешно изменён")
-    })
-    public ResponseEntity<UserResponse> changeUser(
-            @AuthenticationPrincipal SecurityUser userDetails,
-            @Valid @RequestBody PatchUserRequest request
-    ) {
-
-        UserResponse response = service.patchUser(userDetails, request);
 
         return ResponseEntity.ok(response);
     }

@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/workout")
+@RequestMapping("/api/workouts")
 @Tag(name = "Тренировки", description = "Управление тренировками")
 public class WorkoutController {
 
@@ -258,7 +258,7 @@ public class WorkoutController {
                                                         {
                                                           "code": "WRONG_ID",
                                                           "message": "Could not resolve id",
-                                                          "timestamp": "2026-01-01T00:01:02"
+                                                          "timestamp": "2026-01-01 00:01:02"
                                                         }
                                                         """
                                             )
@@ -333,7 +333,7 @@ public class WorkoutController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/all")
+    @GetMapping()
     @Operation(
             summary = "Поиск всех тренировок",
             responses = {

@@ -1,182 +1,136 @@
 package notroflguru.workouttracker.user.service;
 
 import notroflguru.workouttracker.user.dto.UserMapper;
-import notroflguru.workouttracker.user.dto.request.LoginRequest;
 import notroflguru.workouttracker.user.dto.request.RegisterRequest;
-import notroflguru.workouttracker.user.dto.response.AuthResponse;
 import notroflguru.workouttracker.user.exception.UserAlreadyExistsException;
 import notroflguru.workouttracker.user.model.Role;
 import notroflguru.workouttracker.user.model.User;
 import notroflguru.workouttracker.user.repository.UserRepository;
-import notroflguru.workouttracker.user.security.JwtCore;
-import notroflguru.workouttracker.user.security.SecurityUser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.util.Optional;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class UserServiceTest {
-
+public class UserServiceTest {
     @Mock
     private UserRepository userRepository;
 
     @Mock
     private PasswordEncoder passwordEncoder;
 
-    @Mock
-    private AuthenticationManager authenticationManager;
-
-    @Mock
-    private JwtCore jwtCore;
-
-    @Mock
-    private Authentication authentication;
-
-    @Mock
-    private UserDetails userDetails;
-
     private UserService userService;
 
     @BeforeEach
     void setUp() {
-        userService = new UserService(
-                userRepository,
-                passwordEncoder,
-                authenticationManager,
-                jwtCore,
-                new UserMapper()
-        );
+        userService = new UserService(userRepository, passwordEncoder, new UserMapper());
     }
 
     @Test
-    void register_SavesUserWithEncodedPasswordAndUserRole() {
+    void createUser_SuccessfullySaved() {
         RegisterRequest request = registerRequest();
-        User savedUser = user();
 
-        when(passwordEncoder.encode("StrongPassword123")).thenReturn("encoded-password");
-        when(userRepository.save(any(User.class))).thenReturn(savedUser);
-        when(jwtCore.generateToken(any(UserDetails.class))).thenReturn("jwt-token");
+        when(userRepository.existsByLogin(any(String.class))).thenReturn(false);
+        when(userRepository.existsByEmail(any(String.class))).thenReturn(false);
+        when(passwordEncoder.encode(any(String.class))).thenReturn("very-long-encoded-password-hash");
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
+            User savedUser = invocation.getArgument(0);
+            savedUser.setId(1L); // Имитирует работу БД по присвоению ID
+            return savedUser;
+        });
 
-        AuthResponse result = userService.register(request);
+        User result = userService.createUser(request);
+        assertEquals(1L, result.getId());
+        assertEquals("pavel@example.com", result.getEmail());
+        assertEquals("pavel", result.getLogin());
+        assertEquals("Pavel", result.getName());
 
-        assertEquals(savedUser.getId(), result.getUser().getId());
+        verify(userRepository).save(any(User.class));
+    }
+
+    @Test
+    void createUser_EncodesPassword() {
+        RegisterRequest request = registerRequest();
+
+        when(userRepository.existsByLogin(any(String.class))).thenReturn(false);
+        when(userRepository.existsByEmail(any(String.class))).thenReturn(false);
+        when(passwordEncoder.encode(any(String.class))).thenReturn("very-long-encoded-password-hash");
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        User result = userService.createUser(request);
+        assertEquals("very-long-encoded-password-hash", result.getPasswordHash());
+
+        verify(passwordEncoder).encode(any(String.class));
+    }
+
+    @Test
+    void createUser_SetsUserRole() {
+        RegisterRequest request = registerRequest();
+
+        when(userRepository.existsByLogin(any(String.class))).thenReturn(false);
+        when(userRepository.existsByEmail(any(String.class))).thenReturn(false);
+        when(passwordEncoder.encode(any(String.class))).thenReturn("very-long-encoded-password-hash");
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        User result = userService.createUser(request);
+        assertEquals(Role.USER, result.getRole());
+    }
+
+    @Test
+    void createUser_SavesInRepository() {
+        RegisterRequest request = registerRequest();
+
+        when(userRepository.existsByLogin(any(String.class))).thenReturn(false);
+        when(userRepository.existsByEmail(any(String.class))).thenReturn(false);
+        when(passwordEncoder.encode(any(String.class))).thenReturn("very-long-encoded-password-hash");
+
+        userService.createUser(request);
 
         ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
         verify(userRepository).save(userCaptor.capture());
 
-        User persistedUser = userCaptor.getValue();
-        assertEquals("pavel", persistedUser.getLogin());
-        assertEquals("Pavel", persistedUser.getName());
-        assertEquals("pavel@example.com", persistedUser.getEmail());
-        assertEquals("encoded-password", persistedUser.getPasswordHash());
-        assertNotEquals(request.getPassword(), persistedUser.getPasswordHash());
-        assertEquals(Role.USER, persistedUser.getRole());
+        User savedUser = userCaptor.getValue();
+        assertEquals(request.getLogin(), savedUser.getLogin());
+        assertEquals(request.getEmail(), savedUser.getEmail());
+        assertEquals("very-long-encoded-password-hash", savedUser.getPasswordHash());
     }
 
     @Test
-    void register_TrimsLoginAndNormalizesEmailBeforeCheckingAndSaving() {
+    void createUser_ShouldThrowExceptionWhenLoginAlreadyExists() {
         RegisterRequest request = registerRequest();
-        request.setLogin("  Pavel  ");
-        request.setEmail("  PAVEL@EXAMPLE.COM ");
-        User savedUser = user();
 
-        when(userRepository.findByLoginOrEmail("pavel", "pavel@example.com")).thenReturn(Optional.empty());
-        when(userRepository.save(any(User.class))).thenReturn(savedUser);
-        when(jwtCore.generateToken(any(UserDetails.class))).thenReturn("");
-
-        AuthResponse result = userService.register(request);
-
-        verify(userRepository).findByLoginOrEmail("pavel", "pavel@example.com");
-        assertEquals("pavel", result.getUser().getLogin());
-        assertEquals("pavel@example.com", result.getUser().getEmail());
-    }
-
-    @Test
-    void register_WhenLoginExists_ThrowsConflictException() {
-        RegisterRequest request = registerRequest();
-        User user = user();
-        when(userRepository.findByLoginOrEmail("pavel", "pavel@example.com")).thenReturn(Optional.of(user));
+        when(userRepository.existsByLogin(request.getLogin())).thenReturn(true);
 
         assertThrows(
                 UserAlreadyExistsException.class,
-                () -> userService.register(request)
+                () -> userService.createUser(request)
         );
 
-        verifyNoInteractions(passwordEncoder);
+        verify(userRepository, never()).save(any(User.class));
+        verify(passwordEncoder, never()).encode(anyString());
     }
 
     @Test
-    void register_WhenEmailExists_ThrowsConflictException() {
+    void createUser_ShouldThrowExceptionWhenEmailAlreadyExists() {
         RegisterRequest request = registerRequest();
-        User user = user();
-        when(userRepository.findByLoginOrEmail("pavel", "pavel@example.com")).thenReturn(Optional.of(user));
+
+        when(userRepository.existsByLogin(request.getLogin())).thenReturn(false);
+        when(userRepository.existsByEmail(request.getEmail())).thenReturn(true);
 
         assertThrows(
                 UserAlreadyExistsException.class,
-                () -> userService.register(request)
+                () -> userService.createUser(request)
         );
 
-        verifyNoInteractions(passwordEncoder);
-    }
-
-    @Test
-    void login_AuthenticatesUserAndReturnsGeneratedToken() {
-        LoginRequest request = new LoginRequest();
-        request.setIdentifier("pavel");
-        request.setPassword("StrongPassword123");
-
-        User user = user();
-
-        UserDetails userDetails = new SecurityUser(user);
-
-        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
-                .thenReturn(authentication);
-        when(authentication.getPrincipal()).thenReturn(userDetails);
-        when(jwtCore.generateToken(userDetails)).thenReturn("jwt-token");
-
-        AuthResponse result = userService.login(request);
-
-        assertEquals("jwt-token", result.getToken());
-        verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
-        verify(jwtCore).generateToken(userDetails);
-    }
-
-    @Test
-    void login_WhenLoginDoesNotExist_ThrowsNotFoundException() {
-        LoginRequest request = new LoginRequest();
-        
-        request.setIdentifier("unknown");
-        request.setPassword("StrongPassword123");
-
-        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class))).thenThrow(new BadCredentialsException(""));
-
-        assertThrows(
-                BadCredentialsException.class,
-                () -> userService.login(request)
-        );
-
-        verify(authenticationManager).authenticate(new UsernamePasswordAuthenticationToken(request.getIdentifier(), request.getPassword()));
-        verifyNoInteractions(jwtCore);
+        verify(userRepository, never()).save(any(User.class));
+        verify(passwordEncoder, never()).encode(anyString());
     }
 
 
@@ -187,15 +141,5 @@ class UserServiceTest {
         request.setEmail("pavel@example.com");
         request.setPassword("StrongPassword123");
         return request;
-    }
-
-    private User user() {
-        User user = new User();
-        user.setLogin("pavel");
-        user.setEmail("pavel@example.com");
-        user.setName("Pavel");
-        user.setPasswordHash("HashedPassword123456");
-        user.setId(1L);
-        return user;
     }
 }

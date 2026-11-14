@@ -9,6 +9,7 @@ import notroflguru.workouttracker.user.exception.UserNotFoundException;
 import notroflguru.workouttracker.user.model.Role;
 import notroflguru.workouttracker.user.model.User;
 import notroflguru.workouttracker.user.security.JwtCore;
+import notroflguru.workouttracker.user.service.AuthService;
 import notroflguru.workouttracker.user.service.UserDetailsService;
 import notroflguru.workouttracker.user.service.UserService;
 import org.junit.jupiter.api.DisplayName;
@@ -41,6 +42,9 @@ class AuthControllerTest {
     private UserService userService;
 
     @MockitoBean
+    private AuthService authService;
+
+    @MockitoBean
     private UserMapper userMapper;
 
     @MockitoBean
@@ -54,7 +58,7 @@ class AuthControllerTest {
     void register_ReturnsCreatedUser() throws Exception {
         AuthResponse response = authResponse();
 
-        when(userService.register(any(RegisterRequest.class))).thenReturn(response);
+        when(authService.register(any(RegisterRequest.class))).thenReturn(response);
 
         mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -73,7 +77,7 @@ class AuthControllerTest {
                 .andExpect(jsonPath("$.user.role").value("USER"))
                 .andExpect(jsonPath("$.user.passwordHash").doesNotExist());
 
-        verify(userService).register(any(RegisterRequest.class));
+        verify(authService).register(any(RegisterRequest.class));
     }
 
     @Test
@@ -95,7 +99,7 @@ class AuthControllerTest {
     @Test
     @DisplayName("Регистрация с занятым login возвращает 409")
     void register_WhenUserExists_ReturnsConflict() throws Exception {
-        when(userService.register(any(RegisterRequest.class)))
+        when(authService.register(any(RegisterRequest.class)))
                 .thenThrow(new UserAlreadyExistsException("логином", "pavel"));
 
         mockMvc.perform(post("/api/auth/register")
@@ -116,7 +120,7 @@ class AuthControllerTest {
     @DisplayName("Логин по login возвращает JWT и пользователя")
     void loginByLogin_ReturnsTokenAndUser() throws Exception {
         AuthResponse authResponse = authResponse();
-        when(userService.login(any())).thenReturn(authResponse);
+        when(authService.login(any())).thenReturn(authResponse);
 
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -137,7 +141,7 @@ class AuthControllerTest {
     @DisplayName("Логин по email возвращает JWT и пользователя")
     void loginByEmail_ReturnsTokenAndUser() throws Exception {
         AuthResponse authResponse = authResponse();
-        when(userService.login(any())).thenReturn(authResponse);
+        when(authService.login(any())).thenReturn(authResponse);
 
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -172,7 +176,7 @@ class AuthControllerTest {
     @Test
     @DisplayName("Логин неизвестного пользователя возвращает 404 по текущему контракту")
     void login_WhenUserDoesNotExist_ReturnsNotFound() throws Exception {
-        when(userService.login(any()))
+        when(authService.login(any()))
                 .thenThrow(new BadCredentialsException("User not found"));
 
         mockMvc.perform(post("/api/auth/login")
@@ -185,17 +189,6 @@ class AuthControllerTest {
                                 """))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.code").value("AUTHENTICATION_FAILED"));
-    }
-
-    private User user() {
-        User user = new User();
-        user.setId(1L);
-        user.setLogin("pavel");
-        user.setName("Pavel");
-        user.setEmail("pavel@example.com");
-        user.setPasswordHash("encoded-password");
-        user.setRole(Role.USER);
-        return user;
     }
 
     private UserResponse userResponse() {

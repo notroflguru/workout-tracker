@@ -19,7 +19,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.Set;
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.eq;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -51,7 +51,7 @@ public class ExerciseControllerTest {
         mockResponse.setId(1L);
         mockResponse.setName("Bench press");
         mockResponse.setDescription("Bench press with a barbell");
-        mockResponse.setMuscleList(Set.of(Muscle.CHEST, Muscle.TRICEPS, Muscle.FRONT_DELTS));
+        mockResponse.setMuscleList(List.of(Muscle.CHEST, Muscle.TRICEPS, Muscle.FRONT_DELTS));
         return mockResponse;
     }
 
@@ -71,7 +71,7 @@ public class ExerciseControllerTest {
         Mockito.when(exerciseService.createExercise(Mockito.any(CreateExerciseRequest.class)))
                 .thenReturn(mockResponse);
 
-        mockMvc.perform(post("/api/exercise")
+        mockMvc.perform(post("/api/exercises")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson))
                 .andDo(print())
@@ -99,7 +99,7 @@ public class ExerciseControllerTest {
         ExerciseResponse mockResponse = mockResponse();
         mockResponse.setName("Ben");
 
-        mockMvc.perform(post("/api/exercise")
+        mockMvc.perform(post("/api/exercises")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson))
                 .andDo(print())
@@ -123,7 +123,7 @@ public class ExerciseControllerTest {
         mockResponse.setName("");
 
 
-        mockMvc.perform(post("/api/exercise")
+        mockMvc.perform(post("/api/exercises")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
                 .andDo(print())
@@ -146,7 +146,7 @@ public class ExerciseControllerTest {
         ExerciseResponse mockResponse = mockResponse();
         mockResponse.setName("123456123456123456123456123456123456123456123456123456123456123456");
 
-        mockMvc.perform(post("/api/exercise")
+        mockMvc.perform(post("/api/exercises")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
                 .andDo(print())
@@ -169,7 +169,7 @@ public class ExerciseControllerTest {
         ExerciseResponse mockResponse = mockResponse();
         mockResponse.setDescription("");
 
-        mockMvc.perform(post("/api/exercise")
+        mockMvc.perform(post("/api/exercises")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
                 .andDo(print())
@@ -192,7 +192,7 @@ public class ExerciseControllerTest {
         ExerciseResponse mockResponse = mockResponse();
         mockResponse.setDescription("Ben");
 
-        mockMvc.perform(post("/api/exercise")
+        mockMvc.perform(post("/api/exercises")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
                 .andDo(print())
@@ -216,7 +216,7 @@ public class ExerciseControllerTest {
         mockResponse.setDescription("Слишком длинное описаниеСлишком длинное описаниеСлишком длинное описаниеСлишком длинное описаниеСлишком длинное описание" +
                 "Слишком длинное описаниеСлишком длинное описаниеСлишком длинное описаниеСлишком длинное описаниеСлишком длинное описаниеСлишком длинное описание");
 
-        mockMvc.perform(post("/api/exercise")
+        mockMvc.perform(post("/api/exercises")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
                 .andDo(print())
@@ -237,12 +237,12 @@ public class ExerciseControllerTest {
                 """;
 
         ExerciseResponse mockResponse = mockResponse();
-        mockResponse.setMuscleList(Set.of());
+        mockResponse.setMuscleList(List.of());
 
         Mockito.when(exerciseService.createExercise(Mockito.any(CreateExerciseRequest.class)))
                 .thenReturn(mockResponse);
 
-        mockMvc.perform(post("/api/exercise")
+        mockMvc.perform(post("/api/exercises")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
                 .andDo(print())
@@ -263,12 +263,12 @@ public class ExerciseControllerTest {
                 """;
 
         ExerciseResponse mockResponse = mockResponse();
-        mockResponse.setMuscleList(Set.of(Muscle.CHEST, Muscle.TRICEPS, Muscle.FRONT_DELTS, Muscle.BICEPS, Muscle.GLUTES, Muscle.ABS));
+        mockResponse.setMuscleList(List.of(Muscle.CHEST, Muscle.TRICEPS, Muscle.FRONT_DELTS, Muscle.BICEPS, Muscle.GLUTES, Muscle.ABS));
 
         Mockito.when(exerciseService.createExercise(Mockito.any(CreateExerciseRequest.class)))
                 .thenReturn(mockResponse);
 
-        mockMvc.perform(post("/api/exercise")
+        mockMvc.perform(post("/api/exercises")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
                 .andDo(print())
@@ -291,7 +291,7 @@ public class ExerciseControllerTest {
         Mockito.when(exerciseService.createExercise(Mockito.any(CreateExerciseRequest.class)))
                 .thenThrow(new ExerciseAlreadyExistsException());
 
-        mockMvc.perform(post("/api/exercise")
+        mockMvc.perform(post("/api/exercises")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson))
                 .andDo(print())
@@ -312,7 +312,7 @@ public class ExerciseControllerTest {
         Mockito.when(exerciseService.findByName(eq(exerciseName)))
                 .thenReturn(mockResponse);
 
-        mockMvc.perform(get("/api/exercise/name/{name}", exerciseName)
+        mockMvc.perform(get("/api/exercises/name/{name}", exerciseName)
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -335,7 +335,7 @@ public class ExerciseControllerTest {
         Mockito.when(exerciseService.findById(eq(exerciseId)))
                 .thenReturn(mockResponse);
 
-        mockMvc.perform(get("/api/exercise/{id}", exerciseId)
+        mockMvc.perform(get("/api/exercises/{id}", exerciseId)
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -353,7 +353,7 @@ public class ExerciseControllerTest {
 
         String nonExistingId = "ABCD";
 
-        mockMvc.perform(get("/api/exercise/{id}", nonExistingId))
+        mockMvc.perform(get("/api/exercises/{id}", nonExistingId))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("WRONG_ID"))
@@ -369,7 +369,7 @@ public class ExerciseControllerTest {
         Mockito.when(exerciseService.findByName(eq(nonExistingName)))
                 .thenThrow(new ExerciseNotFoundException());
 
-        mockMvc.perform(get("/api/exercise/name/{name}", nonExistingName))
+        mockMvc.perform(get("/api/exercises/name/{name}", nonExistingName))
                 .andDo(print())
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code").value("EXERCISE_NOT_FOUND"))
@@ -385,7 +385,7 @@ public class ExerciseControllerTest {
         Mockito.when(exerciseService.findById(Mockito.any(Long.class)))
                 .thenThrow(new ExerciseNotFoundException());
 
-        mockMvc.perform(get("/api/exercise/{id}", nonExistingId))
+        mockMvc.perform(get("/api/exercises/{id}", nonExistingId))
                 .andDo(print())
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code").value("EXERCISE_NOT_FOUND"))

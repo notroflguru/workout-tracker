@@ -32,7 +32,7 @@ public class ExerciseControllerSecurityTest {
 
     @Test
     void shouldAllowAccessForEveryone() throws Exception {
-        mockMvc.perform(get("/api/exercise/all"))
+        mockMvc.perform(get("/api/exercises"))
                 .andExpect(status().isOk());
     }
 }

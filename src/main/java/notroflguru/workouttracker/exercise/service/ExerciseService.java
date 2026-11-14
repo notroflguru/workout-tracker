@@ -4,11 +4,13 @@ import lombok.extern.slf4j.Slf4j;
 import notroflguru.workouttracker.exercise.dto.*;
 import notroflguru.workouttracker.exercise.dto.request.CreateExerciseRequest;
 import notroflguru.workouttracker.exercise.dto.response.ExerciseResponse;
+import notroflguru.workouttracker.exercise.dto.response.ExerciseShortResponse;
 import notroflguru.workouttracker.exercise.exception.ExerciseAlreadyExistsException;
 import notroflguru.workouttracker.exercise.exception.ExerciseNotFoundException;
 import notroflguru.workouttracker.exercise.model.Exercise;
 import notroflguru.workouttracker.exercise.repository.ExerciseRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -24,10 +26,11 @@ public class ExerciseService {
         this.mapper = exerciseMapper;
     }
 
-    public List<ExerciseResponse> findAll() {
-        return mapper.toResponseList(repository.findAll());
+    public List<ExerciseShortResponse> findAll() {
+        return mapper.toShortResponseList(repository.findAllByOrderByNameAsc());
     }
 
+    @Transactional
     public ExerciseResponse createExercise(CreateExerciseRequest request) {
 
         if (repository.findByNameIgnoreCase(request.getName()).isPresent()) {

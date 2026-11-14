@@ -34,14 +34,14 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/login", "/api/auth/register").permitAll() // Эндпоинты для логина и регистрации доступны всем
-                        .requestMatchers("/api/auth/me").hasAnyRole("ADMIN", "USER") // Свой пользователь только авторизованным
+                        .requestMatchers("/api/auth/**").permitAll() // Эндпоинты для логина и регистрации доступны всем
+                        .requestMatchers("/api/user/**").hasAnyRole("ADMIN", "USER") // Свой пользователь только авторизованным
                         .requestMatchers("/api/admin/**").hasRole("ADMIN") // Админские эндпоинты только админам
                         .requestMatchers(
                                 "/api/swagger-ui/**", "/v3/api-docs/**", "/api/docs/**").permitAll() // Эндпоинты с API документацией доступны всем
-                        .requestMatchers(HttpMethod.GET, "/api/exercise/**").permitAll() // GET /api/exercise можно всем желающим
-                        .requestMatchers("/api/workout/**").hasAnyRole("ADMIN", "USER") // /api/workout можно только авторизованным
-                        .requestMatchers(HttpMethod.POST, "/api/exercise/**").hasAnyRole("ADMIN", "USER") // POST /api/exercise можно только авторизованным
+                        .requestMatchers(HttpMethod.GET, "/api/exercises/**").permitAll() // GET /api/exercise можно всем желающим
+                        .requestMatchers("/api/workouts/**").hasAnyRole("ADMIN", "USER") // /api/workouts можно только авторизованным
+                        .requestMatchers(HttpMethod.POST, "/api/exercises/**").hasAnyRole("ADMIN", "USER") // POST /api/exercise можно только авторизованным
                         .anyRequest().authenticated()
                 )
                 // Добавляем JWT фильтр перед стандартным фильтром аутентификации

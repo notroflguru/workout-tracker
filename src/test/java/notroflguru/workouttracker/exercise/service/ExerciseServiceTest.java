@@ -1,7 +1,9 @@
 package notroflguru.workouttracker.exercise.service;
 
+import jakarta.persistence.EntityManager;
 import notroflguru.workouttracker.exercise.dto.request.CreateExerciseRequest;
 import notroflguru.workouttracker.exercise.dto.response.ExerciseResponse;
+import notroflguru.workouttracker.exercise.model.Exercise;
 import notroflguru.workouttracker.exercise.model.Muscle;
 import notroflguru.workouttracker.exercise.exception.ExerciseAlreadyExistsException;
 import notroflguru.workouttracker.exercise.exception.ExerciseNotFoundException;
@@ -19,10 +21,8 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.List;
-import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 @Testcontainers
 @SpringBootTest
@@ -49,6 +49,9 @@ class ExerciseServiceTest {
 
     @Autowired
     private ExerciseRepository exerciseRepository;
+
+    @Autowired
+    private EntityManager entityManager;
 
     @BeforeEach
     void setUp() {
@@ -77,6 +80,32 @@ class ExerciseServiceTest {
         ExerciseResponse response = exerciseService.findByName("bEnCh PrEsS");
 
         assertEquals("Bench press", response.getName());
+    }
+
+    @Test
+    @DisplayName("Should persist created exercise in database")
+    void createExercise_PersistsExercise() {
+        CreateExerciseRequest request =
+                createExerciseRequest("Bench press");
+
+        entityManager.clear();
+
+        ExerciseResponse response =
+                exerciseService.createExercise(request);
+
+        assertTrue(exerciseRepository.existsById(response.getId()));
+
+        Exercise savedExercise = exerciseRepository
+                .findById(response.getId())
+                .orElseThrow();
+
+        assertEquals("Bench press", savedExercise.getName());
+        assertEquals("Bench press with a barbell",
+                savedExercise.getDescription());
+        assertEquals(
+                List.of(Muscle.CHEST, Muscle.TRICEPS),
+                savedExercise.getMuscleList()
+        );
     }
 
 
@@ -118,7 +147,7 @@ class ExerciseServiceTest {
         CreateExerciseRequest request = new CreateExerciseRequest();
         request.setName(name);
         request.setDescription("Bench press with a barbell");
-        request.setMuscleList(Set.of(Muscle.CHEST, Muscle.TRICEPS));
+        request.setMuscleList(List.of(Muscle.CHEST, Muscle.TRICEPS));
         return request;
     }
 }

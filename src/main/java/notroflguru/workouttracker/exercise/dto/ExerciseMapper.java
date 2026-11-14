@@ -2,6 +2,7 @@ package notroflguru.workouttracker.exercise.dto;
 
 import notroflguru.workouttracker.exercise.dto.request.CreateExerciseRequest;
 import notroflguru.workouttracker.exercise.dto.response.ExerciseResponse;
+import notroflguru.workouttracker.exercise.dto.response.ExerciseShortResponse;
 import notroflguru.workouttracker.exercise.model.Exercise;
 import org.springframework.stereotype.Component;
 
@@ -18,8 +19,8 @@ public class ExerciseMapper {
         return response;
     }
 
-    public List<ExerciseResponse> toResponseList(List<Exercise> exerciseList) {
-        return exerciseList.stream().map(this::toResponse).toList();
+    public List<ExerciseShortResponse> toShortResponseList(List<Exercise> exerciseList) {
+        return exerciseList.stream().map(this::toShortResponse).toList();
     }
 
     public Exercise toEntity(CreateExerciseRequest request) {
@@ -28,5 +29,13 @@ public class ExerciseMapper {
         entity.setDescription(request.getDescription());
         entity.setMuscleList(request.getMuscleList());
         return entity;
+    }
+
+    public ExerciseShortResponse toShortResponse(Exercise exercise) {
+        ExerciseShortResponse response = new ExerciseShortResponse();
+        response.setId(exercise.getId());
+        response.setName(exercise.getName());
+        response.setMuscleList(exercise.getMuscleList());
+        return response;
     }
 }
