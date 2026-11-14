@@ -8,7 +8,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import notroflguru.workouttracker.exercise.dto.request.CreateExerciseRequest;
 import notroflguru.workouttracker.exercise.dto.response.ExerciseResponse;
-import notroflguru.workouttracker.exercise.dto.response.ExerciseShortResponse;
+import notroflguru.workouttracker.exercise.dto.response.ShortExerciseResponse;
 import notroflguru.workouttracker.exercise.service.ExerciseService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +20,7 @@ import java.util.List;
 @RequestMapping("/api/exercises")
 @Tag(name = "Упражнения", description = "Управление упражнениями")
 public class ExerciseController {
-    ExerciseService service;
+    private final ExerciseService service;
 
     public ExerciseController(ExerciseService exerciseService) {
         this.service = exerciseService;
@@ -69,8 +69,8 @@ public class ExerciseController {
                     ))),
             }
     )
-    public ResponseEntity<List<ExerciseShortResponse>> findAll() {
-        List<ExerciseShortResponse> responseList = service.findAll();
+    public ResponseEntity<List<ShortExerciseResponse>> findAll() {
+        List<ShortExerciseResponse> responseList = service.findAll();
         return ResponseEntity.ok(responseList);
     }
 

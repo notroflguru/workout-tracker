@@ -4,7 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import notroflguru.workouttracker.exercise.dto.*;
 import notroflguru.workouttracker.exercise.dto.request.CreateExerciseRequest;
 import notroflguru.workouttracker.exercise.dto.response.ExerciseResponse;
-import notroflguru.workouttracker.exercise.dto.response.ExerciseShortResponse;
+import notroflguru.workouttracker.exercise.dto.response.ShortExerciseResponse;
 import notroflguru.workouttracker.exercise.exception.ExerciseAlreadyExistsException;
 import notroflguru.workouttracker.exercise.exception.ExerciseNotFoundException;
 import notroflguru.workouttracker.exercise.model.Exercise;
@@ -26,7 +26,7 @@ public class ExerciseService {
         this.mapper = exerciseMapper;
     }
 
-    public List<ExerciseShortResponse> findAll() {
+    public List<ShortExerciseResponse> findAll() {
         return mapper.toShortResponseList(repository.findAllByOrderByNameAsc());
     }
 

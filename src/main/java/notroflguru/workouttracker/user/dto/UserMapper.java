@@ -1,5 +1,6 @@
 package notroflguru.workouttracker.user.dto;
 
+import notroflguru.workouttracker.user.dto.response.AdminUserResponse;
 import notroflguru.workouttracker.user.dto.response.UserResponse;
 import notroflguru.workouttracker.user.model.User;
 import org.springframework.stereotype.Component;
@@ -16,6 +17,14 @@ public class UserMapper {
         response.setName(user.getName());
         response.setRole(user.getRole());
 
+        return response;
+    }
+
+    public AdminUserResponse toAdminResponse(User user) {
+        AdminUserResponse response = new AdminUserResponse();
+        response.setId(user.getId());
+        response.setLogin(user.getLogin());
+        response.setRole(user.getRole());
         return response;
     }
 }

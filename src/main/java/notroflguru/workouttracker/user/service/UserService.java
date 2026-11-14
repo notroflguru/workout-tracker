@@ -102,5 +102,4 @@ public class UserService {
     private String normalizeIdentifier(String identifier) {
         return identifier.trim().toLowerCase();
     }
-
 }

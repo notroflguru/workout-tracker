@@ -44,7 +44,7 @@ copy .env.example .env
 cp .env.example .env
 ```
 
-Измените значения в `.env`, особенно `JWT_SECRET`.
+Измените значения в `.env`.
 
 ## Запуск PostgreSQL
 
@@ -146,6 +146,13 @@ PUT    /api/workouts/{id}
 DELETE /api/workouts/{id}
 ```
 
+### Админ-панель
+
+```text
+GET /api/admin/users
+PATCH /api/admin/users/{id}/role
+```
+
 Для защищённых endpoint’ов передавайте JWT:
 
 ```text
@@ -172,7 +179,9 @@ src/main/resources/db/migration
 
 ```text
 src/main/java/notroflguru/workouttracker
+├── admin
 ├── config
+├── bootstrap
 ├── exercise
 ├── user
 ├── workout
@@ -183,13 +192,16 @@ src/main/java/notroflguru/workouttracker
 
 ## Переменные окружения
 
-| Переменная | Назначение |
-|---|---|
-| `POSTGRES_DB` | имя базы данных |
-| `POSTGRES_USER` | пользователь PostgreSQL |
-| `POSTGRES_PASSWORD` | пароль PostgreSQL |
-| `POSTGRES_PORT` | внешний порт PostgreSQL |
-| `JWT_SECRET` | секрет для подписи JWT |
+| Переменная               | Назначение              |
+|--------------------------|-------------------------|
+| `POSTGRES_DB`            | имя базы данных         |
+| `POSTGRES_USER`          | пользователь PostgreSQL |
+| `POSTGRES_PASSWORD`      | пароль PostgreSQL       |
+| `POSTGRES_PORT`          | внешний порт PostgreSQL |
+| `JWT_SECRET`             | секрет для подписи JWT  |
+| `INITIAL_ADMIN_LOGIN`    | логин для админа        |
+| `INITIAL_ADMIN_PASSWORD` | пароль для админа       |
+| `INITIAL_ADMIN_EMAIL`    | почта для админа        |
 
 ## Остановка
 

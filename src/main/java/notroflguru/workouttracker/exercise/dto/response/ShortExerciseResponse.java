@@ -8,7 +8,7 @@ import java.util.List;
 
 @JsonPropertyOrder({ "id", "name", "muscleList"})
 @Schema(description = "Объект ответа упражнения")
-public class ExerciseShortResponse {
+public class ShortExerciseResponse {
     @Schema(description = "Уникальный идентификатор упражнения", example = "2")
     private Long id;
 
